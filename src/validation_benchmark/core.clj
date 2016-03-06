@@ -13,7 +13,11 @@
 
 
 (def alternatives {:annotate 'validation-benchmark.annotate
+                   :placebo 'validation-benchmark.placebo
                    :schema 'validation-benchmark.schema})
+
+
+(def bench-out-path "criterium.output")
 
 
 (def tests
@@ -46,16 +50,17 @@
 (defn print-summary [results]
   (println "Summary:")
   (doseq [[lib-name test-results] results]
+    (doseq [[test-name {:keys [mean]}] test-results]
+      (println
+        (if mean
+          (format "  %s\t%s\tmean: %.9fs" lib-name test-name mean)
+          (format "  %s\t%s\t--" lib-name test-name))))
     (let [total (->> (vals test-results)
                      (map :mean)
                      (filter some?)
                      (apply +))]
       (println (format "  %s total: %.9fs" lib-name total)))
-    (doseq [[test-name {:keys [mean]}] test-results]
-      (println
-        (if mean
-          (format "  %s\t%s\tmean: %.9fs" lib-name test-name mean)
-          (format "  %s\t%s\t--" lib-name test-name))))))
+    (println)))
 
 
 (defn run-benchmarks [alternatives tests]
@@ -76,7 +81,9 @@
               (test-fn v)
               (catch Exception e ::exception)))
         opts nil]
-    (bench (fn [] (doall (map f test-data))) opts)))
+    (with-open [bench-out (writer bench-out-path :append true)]
+      (binding [*out* bench-out]
+        (bench (fn [] (doall (map f test-data))) opts)))))
 
 
 (defn save-results [results path]
