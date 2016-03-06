@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [criterium "0.4.3"]
                  [prismatic/schema "1.0.4"]
-                 [com.velisco/herbert "0.7.0-alpha1"]
+                 [com.velisco/herbert "0.7.0-alpha2"]
                  [com.roomkey/annotate "1.0.1"]]
   :main ^:skip-aot validation-benchmark.core
   :jvm-opts []

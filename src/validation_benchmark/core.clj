@@ -13,6 +13,7 @@
 
 
 (def alternatives {:annotate 'validation-benchmark.annotate
+                   :herbert 'validation-benchmark.herbert
                    :placebo 'validation-benchmark.placebo
                    :schema 'validation-benchmark.schema})
 
