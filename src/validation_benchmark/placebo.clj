@@ -10,7 +10,7 @@
 (defn nil-allowed-string [v] nil)
 
 
-(defn wrapper [f]
-  (fn [v _]
+(defn wrapper [f _]
+  (fn [v]
     (f v)
     true))

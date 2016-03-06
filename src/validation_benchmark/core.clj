@@ -22,31 +22,26 @@
 
 
 (def tests
-  (letfn [(inputs [valids invalids]
-            (->> (concat (map vector valids (repeat true))
-                         (map vector invalids (repeat false)))
-                 (into [])
-                 (shuffle)))]
-    {'nil-allowed-bool (inputs [true false nil]
-                               [1 "x" 'y :z [] #{} {}])
-     'nil-allowed-number (inputs [0
-                                  1
-                                  -1
-                                  42
-                                  0.5
-                                  -1.41421
-                                  22/7
-                                  3.14159265358M
-                                  36786883868216818816N
-                                  nil]
-                                 [true "x" 'y :z [] #{} {}])
-     'nil-allowed-string (inputs ["Foo"
-                                  ""
-                                  nil
-                                  "SimpleBeanFactoryAwareAspectInstanceFactory"
-                                  "AbstractSingletonProxyFactoryBean"
-                                  "TransactionAwarePersistenceManagerFactoryProxy"]
-                                 [true 'y :z [] #{} {}])}))
+  {'nil-allowed-bool [[true false nil]
+                      [1 "x" 'y :z [] #{} {}]]
+   'nil-allowed-number [[0
+                         1
+                         -1
+                         42
+                         0.5
+                         -1.41421
+                         22/7
+                         3.14159265358M
+                         36786883868216818816N
+                         nil]
+                        [true "x" 'y :z [] #{} {}]]
+   'nil-allowed-string [["Foo"
+                         ""
+                         nil
+                         "SimpleBeanFactoryAwareAspectInstanceFactory"
+                         "AbstractSingletonProxyFactoryBean"
+                         "TransactionAwarePersistenceManagerFactoryProxy"]
+                        [true 'y :z [] #{} {}]]})
 
 
 (defn check-results [results]
@@ -101,7 +96,7 @@
         opts nil]
     (with-open [bench-out (writer bench-out-path :append true)]
       (binding [*out* bench-out]
-        (bench (fn [] (doall (map (partial apply test-fn) test-data))) opts)))))
+        (bench (fn [] (doall (map test-fn test-data))) opts)))))
 
 
 (defn save-results [results path]
@@ -155,15 +150,24 @@
                         (var-get))]
     (assert (some? wrapper)
             (str "No wrapper in" lib-ns))
-    (->> (for [[test-name test-data] tests]
+    (->> (for [[test-name [valids invalids]] tests
+               [test-name' test-data valid?] (map vector
+                                           (map #(-> test-name
+                                                     (name)
+                                                     (str %)
+                                                     (symbol))
+                                                ["-valid" "-invalid"])
+                                           [valids invalids]
+                                           [true false])
+               :when (seq test-data)]
            (do
-             (println "   " test-name)
-             [test-name
+             (println "   " test-name')
+             [test-name'
               (if-let [test-fn (some-> publics
                                        (get test-name)
                                        (var-get))]
                 (summarize (run-test quick?
-                                     (wrapper test-fn)
+                                     (wrapper test-fn valid?)
                                      test-data)))]))
          (into {}))))
 

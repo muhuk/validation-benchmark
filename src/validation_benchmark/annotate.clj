@@ -15,6 +15,6 @@
   (ann/check (types/Nilable String) v))
 
 
-(defn wrapper [f]
-  (fn [v valid?]
+(defn wrapper [f valid?]
+  (fn [v]
     (= (nil? (f v)) valid?)))

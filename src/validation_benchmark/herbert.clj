@@ -14,7 +14,7 @@
   (h/conforms? '(or str nil) v))
 
 
-(defn wrapper [f]
-  (fn [v valid?]
+(defn wrapper [f valid?]
+  (fn [v]
     (= (f v)
        valid?)))

@@ -14,8 +14,8 @@
   (s/validate (s/maybe s/Str) v))
 
 
-(defn wrapper [f]
-  (fn [v valid?]
+(defn wrapper [f valid?]
+  (fn [v]
     (= (try
          (f v)
          true
