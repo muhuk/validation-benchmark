@@ -22,15 +22,21 @@
 
 
 (def tests
-  {'nil-allowed-bool [true false nil]
-   'nil-allowed-number [0
-                        42
-                        0.5
-                        22/7
-                        3.14159265358M
-                        36786883868216818816N
-                        nil]
-   'nil-allowed-string ["Foo" "" nil]})
+  {'nil-allowed-bool (map vector
+                          [true false nil]
+                          (repeat true))
+   'nil-allowed-number (map vector
+                            [0
+                             42
+                             0.5
+                             22/7
+                             3.14159265358M
+                             36786883868216818816N
+                             nil]
+                            (repeat true))
+   'nil-allowed-string (map vector
+                            ["Foo" "" nil]
+                            (repeat true))})
 
 
 (defn check-results [results]
@@ -77,14 +83,10 @@
   (let [bench (if quick?
                 criterium/quick-benchmark*
                 criterium/benchmark*)
-         f (fn [v]
-            (try
-              (test-fn v)
-              (catch Exception e ::exception)))
         opts nil]
     (with-open [bench-out (writer bench-out-path :append true)]
       (binding [*out* bench-out]
-        (bench (fn [] (doall (map f test-data))) opts)))))
+        (bench (fn [] (doall (map (partial apply test-fn) test-data))) opts)))))
 
 
 (defn save-results [results path]
@@ -132,7 +134,12 @@
 
 
 (defn test-lib [quick? lib-ns tests]
-  (let [publics (ns-publics lib-ns)]
+  (let [publics (ns-publics lib-ns)
+        wrapper (some-> publics
+                        (get 'wrapper)
+                        (var-get))]
+    (assert (some? wrapper)
+            (str "No wrapper in" lib-ns))
     (->> (for [[test-name test-data] tests]
            (do
              (println "   " test-name)
@@ -141,7 +148,7 @@
                                        (get test-name)
                                        (var-get))]
                 (summarize (run-test quick?
-                                     test-fn
+                                     (wrapper test-fn)
                                      test-data)))]))
          (into {}))))
 
