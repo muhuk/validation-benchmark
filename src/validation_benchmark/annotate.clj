@@ -17,8 +17,4 @@
 
 (defn wrapper [f]
   (fn [v valid?]
-    (= (try
-         (f v)
-         true
-         (catch Exception e false))
-       valid?)))
+    (= (nil? (f v)) valid?)))

@@ -22,21 +22,31 @@
 
 
 (def tests
-  {'nil-allowed-bool (map vector
-                          [true false nil]
-                          (repeat true))
-   'nil-allowed-number (map vector
-                            [0
-                             42
-                             0.5
-                             22/7
-                             3.14159265358M
-                             36786883868216818816N
-                             nil]
-                            (repeat true))
-   'nil-allowed-string (map vector
-                            ["Foo" "" nil]
-                            (repeat true))})
+  (letfn [(inputs [valids invalids]
+            (->> (concat (map vector valids (repeat true))
+                         (map vector invalids (repeat false)))
+                 (into [])
+                 (shuffle)))]
+    {'nil-allowed-bool (inputs [true false nil]
+                               [1 "x" 'y :z [] #{} {}])
+     'nil-allowed-number (inputs [0
+                                  1
+                                  -1
+                                  42
+                                  0.5
+                                  -1.41421
+                                  22/7
+                                  3.14159265358M
+                                  36786883868216818816N
+                                  nil]
+                                 [true "x" 'y :z [] #{} {}])
+     'nil-allowed-string (inputs ["Foo"
+                                  ""
+                                  nil
+                                  "SimpleBeanFactoryAwareAspectInstanceFactory"
+                                  "AbstractSingletonProxyFactoryBean"
+                                  "TransactionAwarePersistenceManagerFactoryProxy"]
+                                 [true 'y :z [] #{} {}])}))
 
 
 (defn check-results [results]
@@ -46,12 +56,17 @@
     (doseq [test-name test-names]
       (println " " test-name)
       (let [test-results (->> lib-names
-                              (map #(get-in results
-                                            [% test-name :results]))
-                              (remove nil?))]
-        (when-not (empty? test-results)
-          (assert (apply = test-results)
-                  (str "test results don't match for" test-name)))))))
+                              (map #(vector %
+                                            (get-in results
+                                                    [% test-name :results])))
+                              (remove (comp nil? second))
+                              (into {}))]
+        (doseq [lib-name lib-names
+                :let [results' (get-in results
+                                       [lib-name test-name :results])]]
+          (when-not (empty? results')
+            (assert (every? #(every? true? %) results')
+                    (str "invalid results for " lib-name))))))))
 
 
 (defn print-summary [results]
