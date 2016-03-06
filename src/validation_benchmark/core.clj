@@ -1,7 +1,8 @@
 (ns validation-benchmark.core
   (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
-            [criterium.core :as criterium])
+            [criterium.core :as criterium]
+            [table.core :refer [table]])
   (:gen-class))
 
 
@@ -66,18 +67,11 @@
 
 (defn print-summary [results]
   (println "Summary:")
-  (doseq [[lib-name test-results] results]
-    (doseq [[test-name {:keys [mean]}] test-results]
-      (println
-        (if mean
-          (format "  %s\t%s\tmean: %.9fs" lib-name test-name mean)
-          (format "  %s\t%s\t--" lib-name test-name))))
-    (let [total (->> (vals test-results)
-                     (map :mean)
-                     (filter some?)
-                     (apply +))]
-      (println (format "  %s total: %.9fs" lib-name total)))
-    (println)))
+  (table (->> (for [[lib-name test-results] results
+                    [test-name {:keys [mean]}] test-results]
+                [test-name lib-name (format "%.9f" mean)])
+              (sort-by (fn [[t l _]] [t l]))
+              (into [["Test name" "Library" "Mean (s)"]]))))
 
 
 (defn run-benchmarks [alternatives tests]
