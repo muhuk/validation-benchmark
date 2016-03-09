@@ -2,11 +2,14 @@
   (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
             [criterium.core :as criterium]
+            [incanter.core :as incanter]
+            [incanter.charts :as chart]
             [table.core :refer [table]])
   (:gen-class))
 
 
-(declare run-test
+(declare make-chart
+         run-test
          test-lib)
 
 
@@ -65,13 +68,50 @@
                     (str "invalid results for " lib-name))))))))
 
 
-(defn print-summary [results]
+(defn final-summary [results chart-path]
   (println "Summary:")
-  (table (->> (for [[lib-name test-results] results
-                    [test-name {:keys [mean]}] test-results]
-                [test-name lib-name (format "%.9f" mean)])
-              (sort-by (fn [[t l _]] [t l]))
-              (into [["Test name" "Library" "Mean (s)"]]))))
+  (let [summary (->> (for [[lib-name test-results] results
+                           [test-name {:keys [mean]}] test-results]
+                       [test-name lib-name mean])
+                     (sort-by (fn [[t l _]] [t l])))]
+    (table (->> summary
+                (map (fn [[t l m]] [t l (format "%.9f" m)]))
+                (into [["Test name" "Library" "Mean (s)"]])))
+    (make-chart (incanter/dataset [:test :lib :timing] summary) chart-path)))
+
+
+(defn make-chart [data filename]
+  (incanter/with-data
+    (->> data
+         (incanter/add-derived-column :test-lib
+                                      [:test :lib]
+                                      #(format "%s %s" %1 %2))
+         (incanter/add-derived-column :timing-base
+                                      [:test]
+                                      #(->> data
+                                            (incanter/$where {:test % :lib :placebo})
+                                            (incanter/$ [:timing])
+                                            (incanter/$ 0)))
+         (incanter/add-derived-column :timing-extra
+                                      [:timing :timing-base]
+                                      -)
+         (incanter/$where (fn [row]
+                            (not= (row :lib) :placebo)))
+         (incanter/$ [:test-lib :timing-base :timing-extra]))
+    (-> (chart/stacked-bar-chart :test-lib
+                                 :timing-base
+                                 :series-label "base"
+                                 :title "Performance Comparison"
+                                 :x-label "Test & library"
+                                 :y-label "Timing in seconds"
+                                 :legend true
+                                 :vertical false)
+        (chart/add-categories :test-lib
+                              :timing-extra
+                              :series-label "extra")
+        (incanter/save filename
+                       :width 770
+                       :height 800))))
 
 
 (defn run-benchmarks [alternatives tests]
@@ -170,8 +210,10 @@
   [& args]
   (doseq [[_ lib-ns] alternatives]
     (require [lib-ns]))
+  ;; (final-summary (read-string (slurp "results.edn")) "chart.png")
   (let [results-path "results.edn"
+        chart-path "chart.png"
         results (run-benchmarks alternatives tests)]
     (check-results results)
     (save-results results results-path)
-    (print-summary results)))
+    (final-summary results chart-path)))
