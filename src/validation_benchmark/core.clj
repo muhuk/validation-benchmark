@@ -72,11 +72,11 @@
   (println "Summary:")
   (let [summary (->> (for [[lib-name test-results] results
                            [test-name {:keys [mean]}] test-results]
-                       [test-name lib-name mean])
+                       [test-name lib-name (* mean 1e9)])
                      (sort-by (fn [[t l _]] [t l])))]
     (table (->> summary
-                (map (fn [[t l m]] [t l (format "%.9f" m)]))
-                (into [["Test name" "Library" "Mean (s)"]])))
+                (map (fn [[t l m]] [t l (format "%10.3f" m)]))
+                (into [["Test name" "Library" "Mean (ns)"]])))
     (make-chart (incanter/dataset [:test :lib :timing] summary) chart-path)))
 
 
@@ -103,7 +103,7 @@
                                  :series-label "base"
                                  :title "Performance Comparison"
                                  :x-label "Test & library"
-                                 :y-label "Timing in seconds"
+                                 :y-label "Timing in nanoseconds"
                                  :legend true
                                  :vertical false)
         (chart/add-categories :test-lib
