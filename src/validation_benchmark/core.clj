@@ -18,7 +18,6 @@
 
 (def alternatives {:annotate 'validation-benchmark.annotate
                    :herbert 'validation-benchmark.herbert
-                   :placebo 'validation-benchmark.placebo
                    :schema 'validation-benchmark.schema})
 
 
@@ -86,29 +85,14 @@
          (incanter/add-derived-column :test-lib
                                       [:test :lib]
                                       #(format "%s %s" %1 %2))
-         (incanter/add-derived-column :timing-base
-                                      [:test]
-                                      #(->> data
-                                            (incanter/$where {:test % :lib :placebo})
-                                            (incanter/$ [:timing])
-                                            (incanter/$ 0)))
-         (incanter/add-derived-column :timing-extra
-                                      [:timing :timing-base]
-                                      -)
-         (incanter/$where (fn [row]
-                            (not= (row :lib) :placebo)))
-         (incanter/$ [:test-lib :timing-base :timing-extra]))
-    (-> (chart/stacked-bar-chart :test-lib
-                                 :timing-base
-                                 :series-label "base"
-                                 :title "Performance Comparison"
-                                 :x-label "Test & library"
-                                 :y-label "Timing in nanoseconds"
-                                 :legend true
-                                 :vertical false)
-        (chart/add-categories :test-lib
-                              :timing-extra
-                              :series-label "extra")
+         (incanter/$ [:test-lib :timing]))
+    (-> (chart/bar-chart :test-lib
+                         :timing
+                         :title "Performance Comparison"
+                         :x-label "Test & library"
+                         :y-label "Timing in nanoseconds"
+                         :legend true
+                         :vertical false)
         (incanter/save filename
                        :width 770
                        :height 800))))
