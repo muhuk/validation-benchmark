@@ -80,19 +80,31 @@
 
 
 (defn make-chart [data filename]
-  (incanter/with-data
-    (->> data
-         (incanter/add-derived-column :test-lib
-                                      [:test :lib]
-                                      #(format "%s %s" %1 %2))
-         (incanter/$ [:test-lib :timing]))
-    (-> (chart/bar-chart :test-lib
-                         :timing
-                         :title "Performance Comparison"
-                         :x-label "Test & library"
-                         :y-label "Timing in nanoseconds"
-                         :legend true
-                         :vertical false)
+  (let [grouped-by-lib (->> data
+                            (incanter/$group-by [:lib])
+                            (map (fn [[k v]] [(:lib k) v]))
+                            (into (sorted-map)))
+        [fst-lib fst-data] (first grouped-by-lib)
+        chart (chart/bar-chart :test
+                               :timing
+                               :title "Performance Comparison"
+                               :x-label "Test & library"
+                               :y-label "Timing in nanoseconds"
+                               :series-label fst-lib
+                               :data fst-data
+                               :legend true
+                               :vertical false)
+        series (rest grouped-by-lib)]
+    (-> (loop [chart chart
+               [[lib-name lib-data] & r] series]
+          (if (some? lib-name)
+            (recur (chart/add-categories chart
+                                         :test
+                                         :timing
+                                         :series-label lib-name
+                                         :data lib-data)
+                   r)
+            chart))
         (incanter/save filename
                        :width 770
                        :height 800))))
@@ -194,7 +206,7 @@
   [& args]
   (doseq [[_ lib-ns] alternatives]
     (require [lib-ns]))
-  ;; (final-summary (read-string (slurp "results.edn")) "chart.png")
+  ;; (final-summary (read-string (slurp "target/results.edn")) "target/chart.png")
   (let [results-path "target/results.edn"
         chart-path "target/chart.png"
         results (run-benchmarks alternatives tests)]
