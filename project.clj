@@ -9,8 +9,10 @@
                  [com.velisco/herbert "0.7.0-alpha2"]
                  [incanter/incanter-core "1.5.6"]
                  [incanter/incanter-charts "1.5.6"]
+                 [io.aviso/pretty "0.1.23"]
                  [prismatic/schema "1.0.4"]
                  [table "0.5.0"]]
+  :plugins [[io.aviso/pretty "0.1.23"]]
   :main ^:skip-aot validation-benchmark.core
   :jvm-opts []
   :target-path "target/%s"
