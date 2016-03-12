@@ -21,7 +21,7 @@
                    :schema 'validation-benchmark.schema})
 
 
-(def bench-out-path "criterium.output")
+(def bench-out-path "target/criterium.output")
 
 
 (def tests
@@ -195,8 +195,8 @@
   (doseq [[_ lib-ns] alternatives]
     (require [lib-ns]))
   ;; (final-summary (read-string (slurp "results.edn")) "chart.png")
-  (let [results-path "results.edn"
-        chart-path "chart.png"
+  (let [results-path "target/results.edn"
+        chart-path "target/chart.png"
         results (run-benchmarks alternatives tests)]
     (check-results results)
     (save-results results results-path)
