@@ -1,5 +1,6 @@
 (ns validation-benchmark.core
-  (:require [clojure.java.io :refer [writer]]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :refer [reader resource writer]]
             [clojure.pprint :refer [pprint]]
             [criterium.core :as criterium]
             [incanter.core :as incanter]
@@ -13,41 +14,11 @@
          test-lib)
 
 
+(def bench-out-path "target/criterium.output")
 (def quick? true)
 
 
-(def alternatives {:annotate 'validation-benchmark.annotate
-                   :herbert 'validation-benchmark.herbert
-                   :schema 'validation-benchmark.schema})
-
-
-(def bench-out-path "target/criterium.output")
-
-
-(def tests
-  {'nil-allowed-bool [[true false nil]
-                      [1 "x" 'y :z [] #{} {}]]
-   'nil-allowed-number [[0
-                         1
-                         -1
-                         42
-                         0.5
-                         -1.41421
-                         22/7
-                         3.14159265358M
-                         36786883868216818816N
-                         nil]
-                        [true "x" 'y :z [] #{} {}]]
-   'nil-allowed-string [["Foo"
-                         ""
-                         nil
-                         "SimpleBeanFactoryAwareAspectInstanceFactory"
-                         "AbstractSingletonProxyFactoryBean"
-                         "TransactionAwarePersistenceManagerFactoryProxy"]
-                        [true 'y :z [] #{} {}]]})
-
-
-(defn check-results [results]
+(defn check-results [alternatives tests results]
   (println "Checking results.")
   (let [lib-names (keys alternatives)
         test-names (keys tests)]
@@ -65,6 +36,13 @@
           (when-not (empty? results')
             (assert (every? #(every? true? %) results')
                     (str "invalid results for " lib-name))))))))
+
+
+(defn edn-reader [^String path]
+  (-> path
+      (resource)
+      (reader)
+      (java.io.PushbackReader.)))
 
 
 (defn final-summary [results chart-path]
@@ -108,6 +86,14 @@
         (incanter/save filename
                        :width 770
                        :height 800))))
+
+
+(defn reader->seq [^java.io.PushbackReader reader]
+  (lazy-seq
+    (let [v (edn/read {:eof ::EOF} reader)]
+      (if (= v ::EOF)
+        nil
+        (cons v (reader->seq reader))))))
 
 
 (defn run-benchmarks [alternatives tests]
@@ -204,12 +190,14 @@
 
 (defn -main
   [& args]
-  (doseq [[_ lib-ns] alternatives]
-    (require [lib-ns]))
-  ;; (final-summary (read-string (slurp "target/results.edn")) "target/chart.png")
-  (let [results-path "target/results.edn"
-        chart-path "target/chart.png"
-        results (run-benchmarks alternatives tests)]
-    (check-results results)
-    (save-results results results-path)
-    (final-summary results chart-path)))
+  (let [[{:keys [alternatives data]}] (reader->seq (edn-reader "tests.edn"))
+        results-path "target/results.edn"
+        chart-path "target/chart.png"]
+    (doseq [[_ lib-ns] alternatives]
+      (prn lib-ns)
+      (require [lib-ns]))
+    ;; (final-summary (read-string (slurp "target/results.edn")) "target/chart.png")
+    (let [results (run-benchmarks alternatives data)]
+      (check-results alternatives data results)
+      (save-results results results-path)
+      (final-summary results chart-path))))
