@@ -1,23 +1,23 @@
 {:alternatives {:annotate validation-benchmark.annotate
                 :herbert validation-benchmark.herbert
                 :schema validation-benchmark.schema}
- :data {nil-allowed-bool [[true false nil]
-                          [1 "x" 'y :z [] #{} {}]]
-        nil-allowed-number [[0
-                             1
-                             -1
-                             42
-                             0.5
-                             -1.41421
-                             22/7
-                             3.14159265358M
-                             36786883868216818816N
-                             nil]
-                            [true "x" 'y :z [] #{} {}]]
-        nil-allowed-string [["Foo"
-                             ""
-                             nil
-                             "SimpleBeanFactoryAwareAspectInstanceFactory"
-                             "AbstractSingletonProxyFactoryBean"
-                             "TransactionAwarePersistenceManagerFactoryProxy"]
-                            [true 'y :z [] #{} {}]]}}
+ :inputs {nil-allowed-bool [[true false nil]
+                            [1 "x" 'y :z [] #{} {}]]
+          nil-allowed-number [[0
+                               1
+                               -1
+                               42
+                               0.5
+                               -1.41421
+                               22/7
+                               3.14159265358M
+                               36786883868216818816N
+                               nil]
+                              [true "x" 'y :z [] #{} {}]]
+          nil-allowed-string [["Foo"
+                               ""
+                               nil
+                               "SimpleBeanFactoryAwareAspectInstanceFactory"
+                               "AbstractSingletonProxyFactoryBean"
+                               "TransactionAwarePersistenceManagerFactoryProxy"]
+                              [true 'y :z [] #{} {}]]}}

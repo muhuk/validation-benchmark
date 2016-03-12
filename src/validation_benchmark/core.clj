@@ -18,10 +18,10 @@
 (def quick? true)
 
 
-(defn check-results [alternatives tests results]
+(defn check-results [alternatives inputs results]
   (println "Checking results.")
   (let [lib-names (keys alternatives)
-        test-names (keys tests)]
+        test-names (keys inputs)]
     (doseq [test-name test-names]
       (println " " test-name)
       (let [test-results (->> lib-names
@@ -96,12 +96,12 @@
         (cons v (reader->seq reader))))))
 
 
-(defn run-benchmarks [alternatives tests]
+(defn run-benchmarks [alternatives inputs]
   (println "Running benchmarks.")
   (->> (for [[lib-name lib-ns] alternatives]
          (do
            (println " " lib-name)
-           [lib-name (test-lib quick? lib-ns tests)]))
+           [lib-name (test-lib quick? lib-ns inputs)]))
        (into {})))
 
 
@@ -159,14 +159,14 @@
               :final-gc-time (/ (:final-gc-time results) 1e9)})))
 
 
-(defn test-lib [quick? lib-ns tests]
+(defn test-lib [quick? lib-ns inputs]
   (let [publics (ns-publics lib-ns)
         wrapper (some-> publics
                         (get 'wrapper)
                         (var-get))]
     (assert (some? wrapper)
             (str "No wrapper in" lib-ns))
-    (->> (for [[test-name [valids invalids]] tests
+    (->> (for [[test-name [valids invalids]] inputs
                [test-name' test-data valid?] (map vector
                                            (map #(-> test-name
                                                      (name)
@@ -190,14 +190,14 @@
 
 (defn -main
   [& args]
-  (let [[{:keys [alternatives data]}] (reader->seq (edn-reader "tests.edn"))
+  (let [[{:keys [alternatives inputs]}] (reader->seq (edn-reader "tests.edn"))
         results-path "target/results.edn"
         chart-path "target/chart.png"]
     (doseq [[_ lib-ns] alternatives]
       (prn lib-ns)
       (require [lib-ns]))
     ;; (final-summary (read-string (slurp "target/results.edn")) "target/chart.png")
-    (let [results (run-benchmarks alternatives data)]
-      (check-results alternatives data results)
+    (let [results (run-benchmarks alternatives inputs)]
+      (check-results alternatives inputs results)
       (save-results results results-path)
       (final-summary results chart-path))))
