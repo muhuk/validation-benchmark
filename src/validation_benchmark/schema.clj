@@ -14,6 +14,18 @@
   (s/validate (s/maybe s/Str) v))
 
 
+(defn set-of-keywords [v]
+  (s/validate #{s/Keyword} v))
+
+
+(defn vector-of-two-elements [v]
+  (s/validate [(s/one s/Any "first") (s/one s/Any "second")] v))
+
+
+(defn vector-of-variable-length [v]
+  (s/validate [s/Any] v))
+
+
 (defn wrapper [f valid?]
   (fn [v]
     (= (try

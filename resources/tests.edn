@@ -3,7 +3,10 @@
                 :schema validation-benchmark.schema}
  :groups {:nil-allowed #{nil-allowed-bool
                          nil-allowed-number
-                         nil-allowed-string}}
+                         nil-allowed-string}
+          :sequential-collections #{set-of-keywords
+                                    vector-of-two-elements
+                                    vector-of-variable-length}}
  :inputs {nil-allowed-bool [[true false nil]
                             [1 "x" 'y :z [] #{} {}]]
           nil-allowed-number [[0
@@ -23,4 +26,20 @@
                                "SimpleBeanFactoryAwareAspectInstanceFactory"
                                "AbstractSingletonProxyFactoryBean"
                                "TransactionAwarePersistenceManagerFactoryProxy"]
-                              [true 'y :z [] #{} {}]]}}
+                              [true 'y :z [] #{} {}]]
+          set-of-keywords [[#{} #{:foo} #{:foo :bar} #{:a :b :c :d}]
+                           [[] {} #{1 2 3}]]
+          vector-of-two-elements [[[:x :y]
+                                   [3 4]
+                                   ['foo "bar"]
+                                   ["bool" true]]
+                                  [[]
+                                   [:x]
+                                   [:x :y :z]]]
+          vector-of-variable-length [[[]
+                                      [a]
+                                      [a b c]
+                                      [0 1 1 2 3 5 8 13 21 34]]
+                                     [nil
+                                      true
+                                      42]]}}

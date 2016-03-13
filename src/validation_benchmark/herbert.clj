@@ -14,6 +14,18 @@
   (h/conforms? '(or str nil) v))
 
 
+(defn set-of-keywords [v]
+  (h/conforms? '#{kw*} v))
+
+
+(defn vector-of-two-elements [v]
+  (h/conforms? '(vec any any) v))
+
+
+(defn vector-of-variable-length [v]
+  (h/conforms? '(vec any*) v))
+
+
 (defn wrapper [f valid?]
   (fn [v]
     (= (f v)

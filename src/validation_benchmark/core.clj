@@ -53,11 +53,12 @@
                        [[group valid?]
                         lib-name
                         (->> test-results
-                             (filter (fn [[[n v] _]] (and (= v valid?)
+                             (filter (fn [[[n v] s]] (and (= v valid?)
+                                                          (some? s)
                                                           (contains? fns n))))
-                             (map (comp :mean second))
-                             (map (partial * 1e9))
-                             (reduce +))])
+                             (map (comp (partial * 1e9) :mean second))
+                             (first))])
+                     (filter (comp some? last))
                      ;; (= v :invalid) returns false for :valid,
                      ;; so it's sorted before :invalid.
                      (sort-by (fn [[[n v] l _]] [n (= v :invalid) l])))]
