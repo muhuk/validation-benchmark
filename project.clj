@@ -1,5 +1,5 @@
 (defproject validation-benchmark "0.1.0-SNAPSHOT"
-  :description "Clojure Validation Benchmark"
+  :description "Benchmark for Clojure validation libraries."
   :url "https://github.com/muhuk/validation-benchmark"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
