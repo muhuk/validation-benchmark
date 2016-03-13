@@ -45,12 +45,22 @@
       (java.io.PushbackReader.)))
 
 
-(defn final-summary [results chart-path]
+(defn final-summary [groups results chart-path]
   (println "Summary:")
-  (let [summary (->> (for [[lib-name test-results] results
-                           [test-name {:keys [mean]}] test-results]
-                       [test-name lib-name (* mean 1e9)])
-                     (sort-by (fn [[t l _]] [t l])))]
+  (let [summary (->> (for [[group fns] groups
+                           [lib-name test-results] results
+                           valid? [:valid :invalid]]
+                       [[group valid?]
+                        lib-name
+                        (->> test-results
+                             (filter (fn [[[n v] _]] (and (= v valid?)
+                                                          (contains? fns n))))
+                             (map (comp :mean second))
+                             (map (partial * 1e9))
+                             (reduce +))])
+                     ;; (= v :invalid) returns false for :valid,
+                     ;; so it's sorted before :invalid.
+                     (sort-by (fn [[[n v] l _]] [n (= v :invalid) l])))]
     (table (->> summary
                 (map (fn [[t l m]] [t l (format "%10.3f" m)]))
                 (into [["Test name" "Library" "Mean (ns)"]])))
@@ -61,7 +71,7 @@
   (let [grouped-by-lib (->> data
                             (incanter/$group-by [:lib])
                             (map (fn [[k v]] [(:lib k) v]))
-                            (into (sorted-map)))
+                            (sort))
         [fst-lib fst-data] (first grouped-by-lib)
         chart (chart/bar-chart :test
                                :timing
@@ -168,13 +178,10 @@
             (str "No wrapper in" lib-ns))
     (->> (for [[test-name [valids invalids]] inputs
                [test-name' test-data valid?] (map vector
-                                           (map #(-> test-name
-                                                     (name)
-                                                     (str %)
-                                                     (symbol))
-                                                ["-valid" "-invalid"])
-                                           [valids invalids]
-                                           [true false])
+                                                  (map #(vector test-name %)
+                                                       [:valid :invalid])
+                                                  [valids invalids]
+                                                  [true false])
                :when (seq test-data)]
            (do
              (println "   " test-name')
@@ -190,14 +197,17 @@
 
 (defn -main
   [& args]
-  (let [[{:keys [alternatives inputs]}] (reader->seq (edn-reader "tests.edn"))
+  (let [[{:keys [alternatives
+                 groups
+                 inputs]}] (reader->seq (edn-reader "tests.edn"))
         results-path "target/results.edn"
         chart-path "target/chart.png"]
     (doseq [[_ lib-ns] alternatives]
-      (prn lib-ns)
       (require [lib-ns]))
-    ;; (final-summary (read-string (slurp "target/results.edn")) "target/chart.png")
+    #_(final-summary groups
+                   (read-string (slurp results-path))
+                   chart-path)
     (let [results (run-benchmarks alternatives inputs)]
       (check-results alternatives inputs results)
       (save-results results results-path)
-      (final-summary results chart-path))))
+      (final-summary groups results chart-path))))

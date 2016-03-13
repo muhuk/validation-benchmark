@@ -1,6 +1,9 @@
 {:alternatives {:annotate validation-benchmark.annotate
                 :herbert validation-benchmark.herbert
                 :schema validation-benchmark.schema}
+ :groups {:nil-allowed #{nil-allowed-bool
+                         nil-allowed-number
+                         nil-allowed-string}}
  :inputs {nil-allowed-bool [[true false nil]
                             [1 "x" 'y :z [] #{} {}]]
           nil-allowed-number [[0
