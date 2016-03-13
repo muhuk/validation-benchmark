@@ -5,6 +5,7 @@
                          nil-allowed-number
                          nil-allowed-string}
           :sequential-collections #{set-of-keywords
+                                    three-tuple
                                     vector-of-two-elements
                                     vector-of-variable-length}}
  :inputs {nil-allowed-bool [[true false nil]
@@ -29,6 +30,8 @@
                               [true 'y :z [] #{} {}]]
           set-of-keywords [[#{} #{:foo} #{:foo :bar} #{:a :b :c :d}]
                            [[] {} #{1 2 3}]]
+          three-tuple [[[:foo "bar" 3] (:foo "bar" 4)]
+                       [[:foo "bar"] [:foo "bar" :baz]]]
           vector-of-two-elements [[[:x :y]
                                    [3 4]
                                    ['foo "bar"]

@@ -18,6 +18,10 @@
   (h/conforms? '#{kw*} v))
 
 
+(defn three-tuple [v]
+  (h/conforms? '(seq kw str num) v))
+
+
 (defn vector-of-two-elements [v]
   (h/conforms? '(vec any any) v))
 

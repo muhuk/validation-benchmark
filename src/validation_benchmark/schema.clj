@@ -18,6 +18,13 @@
   (s/validate #{s/Keyword} v))
 
 
+(defn three-tuple [v]
+  (s/validate [(s/one s/Keyword "k")
+               (s/one s/Str "s")
+               (s/one s/Num "n")]
+              v))
+
+
 (defn vector-of-two-elements [v]
   (s/validate [(s/one s/Any "first") (s/one s/Any "second")] v))
 

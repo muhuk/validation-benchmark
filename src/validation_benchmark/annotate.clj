@@ -19,6 +19,10 @@
   (ann/check #{types/Keyword} v))
 
 
+(defn three-tuple [v]
+  (ann/check [types/Keyword String types/Num] v))
+
+
 (defn vector-of-two-elements [v]
   (ann/check (types/I [types/Any] (types/Count 2)) v))
 
