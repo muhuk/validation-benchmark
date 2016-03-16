@@ -2,35 +2,28 @@
   (:require [miner.herbert :as h]))
 
 
-(defn nil-allowed-bool [v]
-  (h/conforms? '(or bool nil) v))
+(def nil-allowed-bool  (h/conform '(or bool nil)))
 
 
-(defn nil-allowed-number [v]
-  (h/conforms? '(or num nil) v))
+(def nil-allowed-number  (h/conform '(or num nil)))
 
 
-(defn nil-allowed-string [v]
-  (h/conforms? '(or str nil) v))
+(def nil-allowed-string  (h/conform '(or str nil)))
 
 
-(defn set-of-keywords [v]
-  (h/conforms? '#{kw*} v))
+(def set-of-keywords (h/conform '#{kw*}))
 
 
-(defn three-tuple [v]
-  (h/conforms? '(seq kw str num) v))
+(def three-tuple (h/conform '(seq kw str num)))
 
 
-(defn vector-of-two-elements [v]
-  (h/conforms? '(vec any any) v))
+(def vector-of-two-elements (h/conform '(vec any any)))
 
 
-(defn vector-of-variable-length [v]
-  (h/conforms? '(vec any*) v))
+(def vector-of-variable-length   (h/conform 'vec))
 
 
 (defn wrapper [f valid?]
   (fn [v]
-    (= (f v)
+    (= (boolean (f v))
        valid?)))
