@@ -1,11 +1,12 @@
 (ns validation-benchmark.core
-  (:require [clojure.edn :as edn]
-            [clojure.java.io :refer [reader resource writer]]
+  (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
             [criterium.core :as criterium]
             [incanter.core :as incanter]
             [incanter.charts :as chart]
-            [table.core :refer [table]])
+            [table.core :refer [table]]
+            [validation-benchmark.edn :refer [reader->seq
+                                              resource-reader]])
   (:gen-class))
 
 
@@ -36,13 +37,6 @@
           (when-not (empty? results')
             (assert (every? #(every? true? %) results')
                     (str "invalid results for " lib-name))))))))
-
-
-(defn edn-reader [^String path]
-  (-> path
-      (resource)
-      (reader)
-      (java.io.PushbackReader.)))
 
 
 (defn final-summary [groups results chart-path]
@@ -99,12 +93,7 @@
                        :height 800))))
 
 
-(defn reader->seq [^java.io.PushbackReader reader]
-  (lazy-seq
-    (let [v (edn/read {:eof ::EOF} reader)]
-      (if (= v ::EOF)
-        nil
-        (cons v (reader->seq reader))))))
+
 
 
 (defn run-benchmarks [alternatives inputs]
@@ -200,7 +189,7 @@
   [& args]
   (let [[{:keys [alternatives
                  groups
-                 inputs]}] (reader->seq (edn-reader "tests.edn"))
+                 inputs]}] (reader->seq (resource-reader "tests.edn"))
         results-path "target/results.edn"
         chart-path "target/chart.png"]
     (doseq [[_ lib-ns] alternatives]
