@@ -2,16 +2,14 @@
   (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
             [criterium.core :as criterium]
-            [incanter.core :as incanter]
-            [incanter.charts :as chart]
             [table.core :refer [table]]
+            [validation-benchmark.chart :refer [make-chart]]
             [validation-benchmark.edn :refer [reader->seq
                                               resource-reader]])
   (:gen-class))
 
 
-(declare make-chart
-         run-test
+(declare run-test
          test-lib)
 
 
@@ -59,41 +57,7 @@
     (table (->> summary
                 (map (fn [[t l m]] [t l (format "%10.3f" m)]))
                 (into [["Test name" "Library" "Mean (ns)"]])))
-    (make-chart (incanter/dataset [:test :lib :timing] summary) chart-path)))
-
-
-(defn make-chart [data filename]
-  (let [grouped-by-lib (->> data
-                            (incanter/$group-by [:lib])
-                            (map (fn [[k v]] [(:lib k) v]))
-                            (sort))
-        [fst-lib fst-data] (first grouped-by-lib)
-        chart (chart/bar-chart :test
-                               :timing
-                               :title "Performance Comparison"
-                               :x-label "Test & library"
-                               :y-label "Timing in nanoseconds"
-                               :series-label fst-lib
-                               :data fst-data
-                               :legend true
-                               :vertical false)
-        series (rest grouped-by-lib)]
-    (-> (loop [chart chart
-               [[lib-name lib-data] & r] series]
-          (if (some? lib-name)
-            (recur (chart/add-categories chart
-                                         :test
-                                         :timing
-                                         :series-label lib-name
-                                         :data lib-data)
-                   r)
-            chart))
-        (incanter/save filename
-                       :width 770
-                       :height 800))))
-
-
-
+    (make-chart summary chart-path)))
 
 
 (defn run-benchmarks [alternatives inputs]
