@@ -1,4 +1,4 @@
-(ns validation-benchmark.schema
+(ns validation-benchmark.lib.schema
   (:require [schema.core :as s]))
 
 

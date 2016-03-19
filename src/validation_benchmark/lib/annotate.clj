@@ -1,4 +1,4 @@
-(ns validation-benchmark.annotate
+(ns validation-benchmark.lib.annotate
   (:require [annotate.core :as ann]
             [annotate.types :as types]))
 

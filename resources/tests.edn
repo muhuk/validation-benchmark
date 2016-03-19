@@ -1,6 +1,6 @@
-{:alternatives {:annotate validation-benchmark.annotate
-                :herbert validation-benchmark.herbert
-                :schema validation-benchmark.schema}
+{:alternatives {:annotate validation-benchmark.lib.annotate
+                :herbert validation-benchmark.lib.herbert
+                :schema validation-benchmark.lib.schema}
  :groups {:nil-allowed #{nil-allowed-bool
                          nil-allowed-number
                          nil-allowed-string}

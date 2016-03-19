@@ -1,4 +1,4 @@
-(ns validation-benchmark.herbert
+(ns validation-benchmark.lib.herbert
   (:require [miner.herbert :as h]))
 
 
