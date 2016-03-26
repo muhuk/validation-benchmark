@@ -17,6 +17,12 @@
 (def quick? true)
 
 
+(defmacro stdout->file [fname & body]
+  `(with-open [out# (writer ~fname :append true)]
+      (binding [*out* out#]
+        ~@body)))
+
+
 (defn check-results [alternatives inputs results]
   (println "Checking results.")
   (let [lib-names (keys alternatives)
@@ -74,9 +80,8 @@
                 criterium/quick-benchmark*
                 criterium/benchmark*)
         opts nil]
-    (with-open [bench-out (writer bench-out-path :append true)]
-      (binding [*out* bench-out]
-        (bench (fn [] (doall (map test-fn test-data))) opts)))))
+    (stdout->file bench-out-path
+      (bench (fn [] (doall (map test-fn test-data))) opts))))
 
 
 (defn save-results [results path]
