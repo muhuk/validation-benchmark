@@ -30,7 +30,7 @@
 
 
 (defn vector-of-variable-length [v]
-  (s/validate [s/Any] v))
+  (s/validate (s/conditional vector? [s/Any]) v))
 
 
 (defn wrapper [f valid?]
