@@ -9,8 +9,7 @@
   (:gen-class))
 
 
-(declare run-test
-         test-lib)
+(declare summarize)
 
 
 (def bench-out-path "target/criterium.output")
@@ -27,17 +26,18 @@
   (println "Checking results.")
   (let [lib-names (keys alternatives)
         test-names (keys inputs)]
-    (doseq [test-name test-names]
-      (println " " test-name)
+    (doseq [test-name test-names
+            valid? [:valid :invalid]]
+      (println " " test-name valid?)
       (let [test-results (->> lib-names
                               (map #(vector %
                                             (get-in results
-                                                    [% test-name :results])))
+                                                    [% test-name valid? :results])))
                               (remove (comp nil? second))
                               (into {}))]
         (doseq [lib-name lib-names
                 :let [results' (get-in results
-                                       [lib-name test-name :results])]]
+                                       [lib-name test-name valid? :results])]]
           (when-not (empty? results')
             (assert (every? #(every? true? %) results')
                     (str "invalid results for " lib-name))))))))
@@ -46,16 +46,16 @@
 (defn final-summary [groups results chart-path]
   (println "Summary:")
   (let [summary (->> (for [[group fns] groups
-                           [lib-name test-results] results
+                           [lib-name lib-data] results
                            valid? [:valid :invalid]]
                        [[group valid?]
                         lib-name
-                        (->> test-results
-                             (filter (fn [[[n v] s]] (and (= v valid?)
-                                                          (some? s)
-                                                          (contains? fns n))))
-                             (map (comp (partial * 1e9) :mean second))
-                             (first))])
+                        (->> lib-data
+                             (filter (comp (partial contains? fns) first))
+                             (vals)
+                             (map valid?)
+                             (map (comp (partial * 1e9) :mean))
+                             (apply +))])
                      (filter (comp some? last))
                      ;; (= v :invalid) returns false for :valid,
                      ;; so it's sorted before :invalid.
@@ -66,22 +66,61 @@
     (make-chart summary chart-path)))
 
 
-(defn run-benchmarks [alternatives inputs]
-  (println "Running benchmarks.")
+(defn prepare-benchmark-for-lib [lib-ns test-name [valids invalids]]
+  (let [publics (ns-publics lib-ns)
+        wrapper (some-> publics
+                        (get 'wrapper)
+                        (var-get))]
+    (assert (some? wrapper)
+            (str "No wrapper in" lib-ns))
+    (assert (or (seq valids) (seq invalids)))
+    (when-let [test-fn (some-> publics
+                               (get test-name)
+                               (var-get))]
+      [test-name
+       {:valid {:inputs valids
+                :fn (wrapper test-fn true)}
+        :invalid {:inputs invalids
+                  :fn (wrapper test-fn false)}}])))
+
+
+(defn prepare-benchmarks [alternatives inputs]
   (->> (for [[lib-name lib-ns] alternatives]
-         (do
-           (println " " lib-name)
-           [lib-name (test-lib quick? lib-ns inputs)]))
+         [lib-name
+          (->> (for [[test-name test-data] inputs]
+                 (prepare-benchmark-for-lib lib-ns
+                                            test-name
+                                            test-data))
+               (into {}))])
        (into {})))
 
 
-(defn run-test [quick? test-fn test-data]
-  (let [bench (if quick?
+(defn require-alternatives [alternatives]
+  (doseq [[_ lib-ns] alternatives]
+      (require [lib-ns])))
+
+
+(defn run-benchmarks [benchmarks quick?]
+  (let [flattened (for [[lib-name lib-data] benchmarks
+                        [test-name test-data] lib-data
+                        [valid? {test-fn :fn inputs :inputs}] test-data]
+                    [[lib-name test-name valid?] [test-fn inputs]])
+        bench (if quick?
                 criterium/quick-benchmark*
                 criterium/benchmark*)
         opts nil]
-    (stdout->file bench-out-path
-      (bench (fn [] (doall (map test-fn test-data))) opts))))
+    (println "Running benchmarks.")
+    (loop [benchmarks-with-results benchmarks
+           [[k [test-fn test-data]] & r] flattened]
+      (if (some? k)
+        (do
+          (println " " k)
+          (recur (->> (stdout->file bench-out-path
+                        (bench (fn [] (doall (map test-fn test-data))) opts))
+                      (summarize)
+                      (assoc-in benchmarks-with-results k))
+                 r))
+        benchmarks-with-results))))
 
 
 (defn save-results [results path]
@@ -128,32 +167,6 @@
               :final-gc-time (/ (:final-gc-time results) 1e9)})))
 
 
-(defn test-lib [quick? lib-ns inputs]
-  (let [publics (ns-publics lib-ns)
-        wrapper (some-> publics
-                        (get 'wrapper)
-                        (var-get))]
-    (assert (some? wrapper)
-            (str "No wrapper in" lib-ns))
-    (->> (for [[test-name [valids invalids]] inputs
-               [test-name' test-data valid?] (map vector
-                                                  (map #(vector test-name %)
-                                                       [:valid :invalid])
-                                                  [valids invalids]
-                                                  [true false])
-               :when (seq test-data)]
-           (do
-             (println "   " test-name')
-             [test-name'
-              (if-let [test-fn (some-> publics
-                                       (get test-name)
-                                       (var-get))]
-                (summarize (run-test quick?
-                                     (wrapper test-fn valid?)
-                                     test-data)))]))
-         (into {}))))
-
-
 (defn -main
   [& args]
   (let [[{:keys [alternatives
@@ -161,12 +174,12 @@
                  inputs]}] (reader->seq (resource-reader "tests.edn"))
         results-path "target/results.edn"
         chart-path "target/chart.png"]
-    (doseq [[_ lib-ns] alternatives]
-      (require [lib-ns]))
+    (require-alternatives alternatives)
     #_(final-summary groups
                    (read-string (slurp results-path))
                    chart-path)
-    (let [results (run-benchmarks alternatives inputs)]
-      (check-results alternatives inputs results)
+    (let [benchmarks (prepare-benchmarks alternatives inputs)
+          results (run-benchmarks benchmarks true)]
       (save-results results results-path)
+      (check-results alternatives inputs results)
       (final-summary groups results chart-path))))
