@@ -20,7 +20,8 @@
 
 
 (defn three-tuple [v]
-  (ann/check [types/Keyword String types/Num] v))
+  (ann/check (types/U [types/Keyword String types/Num]
+                      (list types/Keyword String types/Num)) v))
 
 
 (defn vector-of-two-elements [v]
