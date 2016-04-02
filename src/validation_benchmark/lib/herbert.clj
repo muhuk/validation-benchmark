@@ -2,6 +2,12 @@
   (:require [miner.herbert :as h]))
 
 
+(def atomic-keyword (h/conform 'kw))
+
+
+(def atomic-number (h/conform 'num))
+
+
 (def nil-allowed-bool  (h/conform '(or bool nil)))
 
 

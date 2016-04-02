@@ -1,14 +1,35 @@
 {:alternatives {:annotate validation-benchmark.lib.annotate
                 :herbert validation-benchmark.lib.herbert
                 :schema validation-benchmark.lib.schema}
- :groups {:nil-allowed #{nil-allowed-bool
+ :groups {:atomic-values #{atomic-keyword}
+          :nil-allowed #{nil-allowed-bool
                          nil-allowed-number
                          nil-allowed-string}
           :sequential-collections #{set-of-keywords
                                     three-tuple
                                     vector-of-two-elements
                                     vector-of-variable-length}}
- :inputs {nil-allowed-bool [[true false nil]
+ :inputs {atomic-keyword [[:foo
+                           :bar.baz/bat
+                           :slartibartfast-the-magrathean]
+                          [9.8
+                           nope
+                           "nah"]]
+          atomic-number [[0
+                          1
+                          -1
+                          42
+                          0.5
+                          -1.41421
+                          22/7
+                          3.14159265358M
+                          36786883868216818816N]
+                         [true
+                          :foo
+                          "bar"
+                          baz
+                          [1 2 3]]]
+          nil-allowed-bool [[true false nil]
                             [1 "x" 'y :z [] #{} {}]]
           nil-allowed-number [[0
                                1

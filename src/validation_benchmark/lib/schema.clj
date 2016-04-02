@@ -2,6 +2,14 @@
   (:require [schema.core :as s]))
 
 
+(defn atomic-keyword [v]
+  (s/validate s/Keyword v))
+
+
+(defn atomic-number [v]
+  (s/validate s/Num v))
+
+
 (defn nil-allowed-bool [v]
   (s/validate (s/maybe s/Bool) v))
 

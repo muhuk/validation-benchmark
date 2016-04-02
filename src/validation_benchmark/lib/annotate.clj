@@ -3,6 +3,14 @@
             [annotate.types :as types]))
 
 
+(defn atomic-keyword [v]
+  (ann/check types/Keyword v))
+
+
+(defn atomic-number [v]
+  (ann/check types/Num v))
+
+
 (defn nil-allowed-bool [v]
   (ann/check (types/Nilable Boolean) v))
 
