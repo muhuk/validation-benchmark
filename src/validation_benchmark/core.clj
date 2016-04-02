@@ -10,7 +10,6 @@
 
 
 (def bench-out-path "target/criterium.output")
-(def quick? true)
 
 
 (defmacro stdout->file [fname & body]
@@ -116,38 +115,10 @@
 
 
 (defn summarize [results]
-  (-> results
-      (select-keys [:total-time :samples])
-      (merge {:system {:os (str (get-in results
-                                        [:os-details :name])
-                                " "
-                                (get-in results
-                                        [:os-details :version]))
-                       :processors (get-in results
-                                           [:os-details
-                                            :available-processors])
-                       :jvm (str (get-in results
-                                         [:runtime-details
-                                          :spec-vendor])
-                                 " "
-                                 (get-in results
-                                         [:runtime-details
-                                          :spec-name])
-                                 " "
-                                 (get-in results
-                                         [:runtime-details
-                                          :vm-version]))
-                       :jre (get-in results
-                                    [:runtime-details
-                                     :java-runtime-version])
-                       :clojure (get-in results
-                                        [:runtime-details
-                                         :clojure-version-string])}
-              :mean (get-in results [:mean 0])
-              :variance (get-in results [:variance 0])
-              :lower-q (get-in results [:lower-q 0])
-              :upper-q (get-in results [:upper-q 0])
-              :final-gc-time (/ (:final-gc-time results) 1e9)})))
+  (let [mean (get-in results [:mean 0])
+        variance (get-in results [:variance 0])]
+    {:mean mean
+     :standard-deviation (Math/sqrt variance)}))
 
 
 (defn -main
@@ -162,12 +133,18 @@
                    (read-string (slurp results-path))
                    chart-path)
     (let [benchmarks (prepare-benchmarks alternatives inputs)
+          quick? true
           bench-fn (let [b (if quick?
                              criterium/quick-benchmark*
                              criterium/benchmark*)
                          opts nil]
                      #(stdout->file bench-out-path
                                     (summarize (b % opts))))
+          bench-fn (fn [f]
+                     (let [start (System/nanoTime)]
+                       (f)
+                       {:mean (- (System/nanoTime) start)
+                        :standard-deviation 0.0}))
           results (run-benchmarks benchmarks bench-fn)]
       (save-results results results-path)
       (final-summary groups results chart-path))))
