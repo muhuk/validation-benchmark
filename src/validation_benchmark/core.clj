@@ -19,25 +19,11 @@
         ~@body)))
 
 
-(defn check-results [alternatives inputs results]
-  (println "Checking results.")
-  (let [lib-names (keys alternatives)
-        test-names (keys inputs)]
-    (doseq [test-name test-names
-            valid? [:valid :invalid]]
-      (println " " test-name valid?)
-      (let [test-results (->> lib-names
-                              (map #(vector %
-                                            (get-in results
-                                                    [% test-name valid? :results])))
-                              (remove (comp nil? second))
-                              (into {}))]
-        (doseq [lib-name lib-names
-                :let [results' (get-in results
-                                       [lib-name test-name valid? :results])]]
-          (when-not (empty? results')
-            (assert (every? #(every? true? %) results')
-                    (str "invalid results for " lib-name))))))))
+(defn assert-result [f msg]
+  (fn [& args]
+    (let [r (apply f args)]
+      (assert r (format msg args))
+      r)))
 
 
 (defn final-summary [groups results chart-path]
@@ -63,11 +49,12 @@
     (make-chart summary chart-path)))
 
 
-(defn prepare-benchmark-for-lib [lib-ns test-name [valids invalids]]
+(defn prepare-benchmark-for-lib [lib-name lib-ns test-name [valids invalids]]
   (let [publics (ns-publics lib-ns)
         wrapper (some-> publics
                         (get 'wrapper)
-                        (var-get))]
+                        (var-get))
+        assert-msg "invalid result for lib: %s, test: [%s %s], args: %%s"]
     (assert (some? wrapper)
             (str "No wrapper in" lib-ns))
     (assert (or (seq valids) (seq invalids)))
@@ -75,17 +62,23 @@
                                (get test-name)
                                (var-get))]
       [test-name
-       {:valid {:inputs valids
-                :fn (wrapper test-fn true)}
-        :invalid {:inputs invalids
-                  :fn (wrapper test-fn false)}}])))
+       (->> (for [[kw in valid?] [[:valid valids true]
+                                  [:invalid invalids false]]]
+              [kw {:inputs in
+                   :fn (assert-result (wrapper test-fn valid?)
+                                      (format assert-msg
+                                              lib-name
+                                              kw
+                                              test-name))}])
+            (into {}))])))
 
 
 (defn prepare-benchmarks [alternatives inputs]
   (->> (for [[lib-name lib-ns] alternatives]
          [lib-name
           (->> (for [[test-name test-data] inputs]
-                 (prepare-benchmark-for-lib lib-ns
+                 (prepare-benchmark-for-lib lib-name
+                                            lib-ns
                                             test-name
                                             test-data))
                (into {}))])
@@ -124,9 +117,7 @@
 
 (defn summarize [results]
   (-> results
-      (select-keys [:results
-                    :total-time
-                    :samples])
+      (select-keys [:total-time :samples])
       (merge {:system {:os (str (get-in results
                                         [:os-details :name])
                                 " "
@@ -179,5 +170,4 @@
                                     (summarize (b % opts))))
           results (run-benchmarks benchmarks bench-fn)]
       (save-results results results-path)
-      (check-results alternatives inputs results)
       (final-summary groups results chart-path))))
