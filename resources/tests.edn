@@ -1,8 +1,10 @@
 {:alternatives {:annotate validation-benchmark.lib.annotate
                 :herbert validation-benchmark.lib.herbert
                 :schema validation-benchmark.lib.schema}
- :groups {:associative-collections #{person-map}
-          :atomic-values #{atomic-keyword}
+ :groups {:associative-collections #{person-map
+                                     person-record}
+          :atomic-values #{atomic-keyword
+                           atomic-number}
           :nil-allowed #{nil-allowed-bool
                          nil-allowed-number
                          nil-allowed-string}
@@ -51,15 +53,28 @@
                                "TransactionAwarePersistenceManagerFactoryProxy"]
                               [true 'y :z [] #{} {}]]
           person-map [[{:name "Goku"
-                        :saiyan true
+                        :saiyan? true
                         :age 12}
                        {:name "Bulma"
-                        :saiyan false
+                        :saiyan? false
                         :age 16}]
                       [{:name "Master Roshi"
-                        :saiyan true}
+                        :saiyan? true}
                        {:name "Krillin"
                         :age 11}]]
+          person-record [[#data/person {:name "Goku"
+                                        :saiyan? true
+                                        :age 12}
+                          #data/person {:name "Bulma"
+                                        :saiyan? false
+                                        :age 16}]
+                         [#data/person {:name "Master Roshi"
+                                        :saiyan? true}
+                          #data/person {:name "Krillin"
+                                        :age 11}
+                          {:name "Goku"
+                           :saiyan? true
+                           :age 12}]]
           set-of-keywords [[#{} #{:foo} #{:foo :bar} #{:a :b :c :d}]
                            [[] {} #{1 2 3}]]
           three-tuple [[[:foo "bar" 3] (:foo "bar" 4)]

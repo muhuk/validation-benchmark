@@ -1,5 +1,6 @@
 (ns validation-benchmark.lib.herbert
-  (:require [miner.herbert :as h]))
+  (:require [miner.herbert :as h]
+            [validation-benchmark.data]))
 
 
 (def atomic-keyword (h/conform 'kw))
@@ -17,7 +18,11 @@
 (def nil-allowed-string (h/conform '(or str nil)))
 
 
-(def person-map (h/conform '{:name str, :saiyan bool, :age int}))
+(def person-map (h/conform '{:name str, ':saiyan? bool, :age int}))
+
+
+(def person-record (h/conform '(tag validation-benchmark.data/Person
+                                    {:name str, ':saiyan? bool, :age int})))
 
 
 (def set-of-keywords (h/conform '#{kw*}))

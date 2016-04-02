@@ -1,6 +1,7 @@
 (ns validation-benchmark.lib.annotate
   (:require [annotate.core :as ann]
-            [annotate.types :as types]))
+            [annotate.types :as types])
+  (:import [validation_benchmark.data Person]))
 
 
 (defn atomic-keyword [v]
@@ -24,7 +25,12 @@
 
 
 (defn person-map [v]
-  (ann/check {:name String, :saiyan Boolean, :age types/Int} v))
+  (ann/check {:name String, :saiyan? Boolean, :age types/Int} v))
+
+
+(defn person-record [v]
+  (ann/check (types/I Person
+                      {:name String, :saiyan? Boolean, :age types/Int}) v))
 
 
 (defn set-of-keywords [v]
