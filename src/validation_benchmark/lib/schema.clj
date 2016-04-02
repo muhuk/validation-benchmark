@@ -22,6 +22,10 @@
   (s/validate (s/maybe s/Str) v))
 
 
+(defn person-map [v]
+  (s/validate {:name s/Str, :saiyan s/Bool, :age s/Int} v))
+
+
 (defn set-of-keywords [v]
   (s/validate #{s/Keyword} v))
 

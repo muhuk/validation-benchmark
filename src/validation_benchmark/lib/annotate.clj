@@ -23,6 +23,10 @@
   (ann/check (types/Nilable String) v))
 
 
+(defn person-map [v]
+  (ann/check {:name String, :saiyan Boolean, :age types/Int} v))
+
+
 (defn set-of-keywords [v]
   (ann/check #{types/Keyword} v))
 

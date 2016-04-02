@@ -8,13 +8,16 @@
 (def atomic-number (h/conform 'num))
 
 
-(def nil-allowed-bool  (h/conform '(or bool nil)))
+(def nil-allowed-bool (h/conform '(or bool nil)))
 
 
-(def nil-allowed-number  (h/conform '(or num nil)))
+(def nil-allowed-number (h/conform '(or num nil)))
 
 
-(def nil-allowed-string  (h/conform '(or str nil)))
+(def nil-allowed-string (h/conform '(or str nil)))
+
+
+(def person-map (h/conform '{:name str, :saiyan bool, :age int}))
 
 
 (def set-of-keywords (h/conform '#{kw*}))
