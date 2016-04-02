@@ -133,18 +133,18 @@
                    (read-string (slurp results-path))
                    chart-path)
     (let [benchmarks (prepare-benchmarks alternatives inputs)
-          quick? true
+          quick? false
           bench-fn (let [b (if quick?
                              criterium/quick-benchmark*
                              criterium/benchmark*)
                          opts nil]
                      #(stdout->file bench-out-path
                                     (summarize (b % opts))))
-          bench-fn (fn [f]
-                     (let [start (System/nanoTime)]
-                       (f)
-                       {:mean (- (System/nanoTime) start)
-                        :standard-deviation 0.0}))
+;;           bench-fn (fn [f]
+;;                      (let [start (System/nanoTime)]
+;;                        (f)
+;;                        {:mean (- (System/nanoTime) start)
+;;                         :standard-deviation 0.0}))
           results (run-benchmarks benchmarks bench-fn)]
       (save-results results results-path)
       (final-summary groups results chart-path))))
