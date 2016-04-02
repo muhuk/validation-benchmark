@@ -9,9 +9,6 @@
   (:gen-class))
 
 
-(declare summarize)
-
-
 (def bench-out-path "target/criterium.output")
 (def quick? true)
 
@@ -100,24 +97,19 @@
       (require [lib-ns])))
 
 
-(defn run-benchmarks [benchmarks quick?]
+(defn run-benchmarks [benchmarks bench-fn]
   (let [flattened (for [[lib-name lib-data] benchmarks
                         [test-name test-data] lib-data
                         [valid? {test-fn :fn inputs :inputs}] test-data]
-                    [[lib-name test-name valid?] [test-fn inputs]])
-        bench (if quick?
-                criterium/quick-benchmark*
-                criterium/benchmark*)
-        opts nil]
+                    [[lib-name test-name valid?] [test-fn inputs]])]
     (println "Running benchmarks.")
     (loop [benchmarks-with-results benchmarks
            [[k [test-fn test-data]] & r] flattened]
       (if (some? k)
         (do
           (println " " k)
-          (recur (->> (stdout->file bench-out-path
-                        (bench (fn [] (doall (map test-fn test-data))) opts))
-                      (summarize)
+          (recur (->> (fn [] (doall (map test-fn test-data)))
+                      (bench-fn)
                       (assoc-in benchmarks-with-results k))
                  r))
         benchmarks-with-results))))
@@ -179,7 +171,13 @@
                    (read-string (slurp results-path))
                    chart-path)
     (let [benchmarks (prepare-benchmarks alternatives inputs)
-          results (run-benchmarks benchmarks true)]
+          bench-fn (let [b (if quick?
+                             criterium/quick-benchmark*
+                             criterium/benchmark*)
+                         opts nil]
+                     #(stdout->file bench-out-path
+                                    (summarize (b % opts))))
+          results (run-benchmarks benchmarks bench-fn)]
       (save-results results results-path)
       (check-results alternatives inputs results)
       (final-summary groups results chart-path))))
