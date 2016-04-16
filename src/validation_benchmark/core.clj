@@ -119,11 +119,12 @@
         chart-path "target/chart.png"]
     (require-alternatives alternatives)
     (when options
-      #_(final-summary groups
+      (if (:reuse options)
+        (final-summary groups
                        (read-string (slurp results-path))
                        chart-path)
-      (let [benchmarks (prepare-benchmarks alternatives inputs)
-            bench-fn (benchmark-fns (:mode options))
-            results (run-benchmarks benchmarks bench-fn)]
-        (save-results results results-path)
-        (final-summary groups results chart-path)))))
+        (let [benchmarks (prepare-benchmarks alternatives inputs)
+              bench-fn (benchmark-fns (:mode options))
+              results (run-benchmarks benchmarks bench-fn)]
+          (save-results results results-path)
+          (final-summary groups results chart-path))))))

@@ -8,6 +8,7 @@
     :default :real
     :parse-fn (comp keyword lower-case)
     :validate [#{:real :quick :dev} "Mode must be real, quick or dev."]]
+   [nil "--reuse" "Skip running the benchmark and use the existing results."]
    ["-h" "--help" "Print this."]])
 
 
