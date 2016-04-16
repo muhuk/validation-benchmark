@@ -1,21 +1,13 @@
 (ns validation-benchmark.core
   (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
-            [criterium.core :as criterium]
             [table.core :refer [table]]
+            [validation-benchmark.bench :as bench]
             [validation-benchmark.chart :refer [make-chart]]
+            [validation-benchmark.cli :as cli]
             [validation-benchmark.edn :refer [reader->seq
                                               resource-reader]])
   (:gen-class))
-
-
-(def bench-out-path "target/criterium.output")
-
-
-(defmacro stdout->file [fname & body]
-  `(with-open [out# (writer ~fname :append true)]
-      (binding [*out* out#]
-        ~@body)))
 
 
 (defn assert-result [f msg]
@@ -114,37 +106,24 @@
     (pprint results w)))
 
 
-(defn summarize [results]
-  (let [mean (get-in results [:mean 0])
-        variance (get-in results [:variance 0])]
-    {:mean mean
-     :standard-deviation (Math/sqrt variance)}))
-
-
 (defn -main
   [& args]
-  (let [[{:keys [alternatives
+  (let [{:keys [options]} (cli/parse args)
+        benchmark-fns {:real bench/real
+                       :quick bench/quick
+                       :dev bench/dev}
+        [{:keys [alternatives
                  groups
                  inputs]}] (reader->seq (resource-reader "tests.edn"))
         results-path "target/results.edn"
         chart-path "target/chart.png"]
     (require-alternatives alternatives)
-    #_(final-summary groups
-                   (read-string (slurp results-path))
-                   chart-path)
-    (let [benchmarks (prepare-benchmarks alternatives inputs)
-          quick? false
-          bench-fn (let [b (if quick?
-                             criterium/quick-benchmark*
-                             criterium/benchmark*)
-                         opts nil]
-                     #(stdout->file bench-out-path
-                                    (summarize (b % opts))))
-;;           bench-fn (fn [f]
-;;                      (let [start (System/nanoTime)]
-;;                        (f)
-;;                        {:mean (- (System/nanoTime) start)
-;;                         :standard-deviation 0.0}))
-          results (run-benchmarks benchmarks bench-fn)]
-      (save-results results results-path)
-      (final-summary groups results chart-path))))
+    (when options
+      #_(final-summary groups
+                       (read-string (slurp results-path))
+                       chart-path)
+      (let [benchmarks (prepare-benchmarks alternatives inputs)
+            bench-fn (benchmark-fns (:mode options))
+            results (run-benchmarks benchmarks bench-fn)]
+        (save-results results results-path)
+        (final-summary groups results chart-path)))))
