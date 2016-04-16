@@ -12,7 +12,7 @@
                                     three-tuple
                                     vector-of-two-elements
                                     vector-of-variable-length}
-          :custom-predicate #{primes}}
+          :custom-predicate #{range-check primes}}
  :inputs {atomic-keyword [[:foo
                            :bar.baz/bat
                            :slartibartfast-the-magrathean]
@@ -78,6 +78,15 @@
                            :age 12}]]
           primes [[7, 29, 53, 83]
                   [4, 16, 25, 99]]
+          range-check [[[1.0 1 1]
+                        [0.01 1 100]
+                        [0.5 5 50]
+                        [0.99 9 99]
+                        [0.05 5 15]]
+                       [[-0.01 1 1]
+                        [1.01 1 1]
+                        [1.0 11 10]
+                        [1.0 5 1000]]]
           set-of-keywords [[#{} #{:foo} #{:foo :bar} #{:a :b :c :d}]
                            [[] {} #{1 2 3}]]
           three-tuple [[[:foo "bar" 3] (:foo "bar" 4)]

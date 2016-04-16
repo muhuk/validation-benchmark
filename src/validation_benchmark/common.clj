@@ -11,3 +11,7 @@
                  53, 59, 61, 67, 71,
                  73, 79, 83, 89, 97}]
     (boolean (primes n))))
+
+
+(defn in-range? [minimum maximum v]
+  (<= minimum v maximum))

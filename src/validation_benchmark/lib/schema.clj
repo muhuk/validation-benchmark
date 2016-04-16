@@ -1,6 +1,7 @@
 (ns validation-benchmark.lib.schema
   (:require [schema.core :as s]
-            [validation-benchmark.common :refer [prime?
+            [validation-benchmark.common :refer [in-range?
+                                                 prime?
                                                  map->Person]])
   (:import [validation_benchmark.common Person]))
 
@@ -37,6 +38,12 @@
 
 (defn primes [v]
   (s/validate (s/pred prime?) v))
+
+
+(defn range-check [v]
+  (s/validate [(s/one (s/pred (partial in-range? 0.0 1.0)) "f")
+               (s/one (s/pred (partial in-range? 1 10)) "g")
+               (s/one (s/pred (partial in-range? 1 100)) "h")] v))
 
 
 (defn set-of-keywords [v]
