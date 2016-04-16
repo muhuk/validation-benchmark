@@ -11,7 +11,8 @@
           :sequential-collections #{set-of-keywords
                                     three-tuple
                                     vector-of-two-elements
-                                    vector-of-variable-length}}
+                                    vector-of-variable-length}
+          :custom-predicate #{primes}}
  :inputs {atomic-keyword [[:foo
                            :bar.baz/bat
                            :slartibartfast-the-magrathean]
@@ -62,19 +63,21 @@
                         :saiyan? true}
                        {:name "Krillin"
                         :age 11}]]
-          person-record [[#data/person {:name "Goku"
-                                        :saiyan? true
-                                        :age 12}
-                          #data/person {:name "Bulma"
-                                        :saiyan? false
-                                        :age 16}]
-                         [#data/person {:name "Master Roshi"
-                                        :saiyan? true}
-                          #data/person {:name "Krillin"
-                                        :age 11}
+          person-record [[#common/person {:name "Goku"
+                                          :saiyan? true
+                                          :age 12}
+                          #common/person {:name "Bulma"
+                                          :saiyan? false
+                                          :age 16}]
+                         [#common/person {:name "Master Roshi"
+                                          :saiyan? true}
+                          #common/person {:name "Krillin"
+                                          :age 11}
                           {:name "Goku"
                            :saiyan? true
                            :age 12}]]
+          primes [[7, 29, 53, 83]
+                  [4, 16, 25, 99]]
           set-of-keywords [[#{} #{:foo} #{:foo :bar} #{:a :b :c :d}]
                            [[] {} #{1 2 3}]]
           three-tuple [[[:foo "bar" 3] (:foo "bar" 4)]

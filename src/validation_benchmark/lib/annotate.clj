@@ -1,7 +1,8 @@
 (ns validation-benchmark.lib.annotate
   (:require [annotate.core :as ann]
-            [annotate.types :as types])
-  (:import [validation_benchmark.data Person]))
+            [annotate.types :as types]
+            [validation-benchmark.common :refer [prime?]])
+  (:import [validation_benchmark.common Person]))
 
 
 (defn atomic-keyword [v]
@@ -31,6 +32,10 @@
 (defn person-record [v]
   (ann/check (types/I Person
                       {:name String, :saiyan? Boolean, :age types/Int}) v))
+
+
+(defn primes [v]
+  (ann/check (types/Pred prime?) v))
 
 
 (defn set-of-keywords [v]

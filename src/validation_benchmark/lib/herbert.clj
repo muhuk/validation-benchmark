@@ -1,6 +1,6 @@
 (ns validation-benchmark.lib.herbert
   (:require [miner.herbert :as h]
-            [validation-benchmark.data]))
+            [validation-benchmark.common :refer [prime?]]))
 
 
 (def atomic-keyword (h/conform 'kw))
@@ -21,8 +21,11 @@
 (def person-map (h/conform '{:name str, ':saiyan? bool, :age int}))
 
 
-(def person-record (h/conform '(tag validation-benchmark.data/Person
+(def person-record (h/conform '(tag validation-benchmark.common/Person
                                     {:name str, ':saiyan? bool, :age int})))
+
+
+(def primes (h/conform '(pred prime?)))
 
 
 (def set-of-keywords (h/conform '#{kw*}))

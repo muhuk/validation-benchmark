@@ -1,7 +1,8 @@
 (ns validation-benchmark.lib.schema
   (:require [schema.core :as s]
-            [validation-benchmark.data :refer [map->Person]])
-  (:import [validation_benchmark.data Person]))
+            [validation-benchmark.common :refer [prime?
+                                                 map->Person]])
+  (:import [validation_benchmark.common Person]))
 
 
 (defn atomic-keyword [v]
@@ -32,6 +33,10 @@
   (s/validate (s/record Person
                         {:name s/Str, :saiyan? s/Bool, :age s/Int}
                         map->Person) v))
+
+
+(defn primes [v]
+  (s/validate (s/pred prime?) v))
 
 
 (defn set-of-keywords [v]
