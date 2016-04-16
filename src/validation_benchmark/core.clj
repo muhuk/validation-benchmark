@@ -127,4 +127,5 @@
               bench-fn (benchmark-fns (:mode options))
               results (run-benchmarks benchmarks bench-fn)]
           (save-results results results-path)
-          (final-summary groups results chart-path))))))
+          (final-summary groups results chart-path))))
+    (System/exit 0)))
