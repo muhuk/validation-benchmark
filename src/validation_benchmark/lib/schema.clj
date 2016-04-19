@@ -6,69 +6,65 @@
   (:import [validation_benchmark.common Person]))
 
 
-(defn atomic-keyword [v]
-  (s/validate s/Keyword v))
+(def atomic-keyword
+  (s/checker s/Keyword))
 
 
-(defn atomic-number [v]
-  (s/validate s/Num v))
+(def atomic-number
+  (s/checker s/Num))
 
 
-(defn nil-allowed-bool [v]
-  (s/validate (s/maybe s/Bool) v))
+(def nil-allowed-bool
+  (s/checker (s/maybe s/Bool)))
 
 
-(defn nil-allowed-number [v]
-  (s/validate (s/maybe s/Num) v))
+(def nil-allowed-number
+  (s/checker (s/maybe s/Num)))
 
 
-(defn nil-allowed-string [v]
-  (s/validate (s/maybe s/Str) v))
+(def nil-allowed-string
+  (s/checker (s/maybe s/Str)))
 
 
-(defn person-map [v]
-  (s/validate {:name s/Str, :saiyan? s/Bool, :age s/Int} v))
+(def person-map
+  (s/checker {:name s/Str, :saiyan? s/Bool, :age s/Int}))
 
 
-(defn person-record [v]
-  (s/validate (s/record Person
-                        {:name s/Str, :saiyan? s/Bool, :age s/Int}
-                        map->Person) v))
+(def person-record
+  (s/checker (s/record Person
+                       {:name s/Str, :saiyan? s/Bool, :age s/Int}
+                       map->Person)))
 
 
-(defn primes [v]
-  (s/validate (s/pred prime?) v))
+(def primes
+  (s/checker (s/pred prime?)))
 
 
-(defn range-check [v]
-  (s/validate [(s/one (s/pred (partial in-range? 0.0 1.0)) "f")
-               (s/one (s/pred (partial in-range? 1 10)) "g")
-               (s/one (s/pred (partial in-range? 1 100)) "h")] v))
+(def range-check
+  (s/checker [(s/one (s/pred (partial in-range? 0.0 1.0)) "f")
+              (s/one (s/pred (partial in-range? 1 10)) "g")
+              (s/one (s/pred (partial in-range? 1 100)) "h")]))
 
 
-(defn set-of-keywords [v]
-  (s/validate #{s/Keyword} v))
+(def set-of-keywords
+  (s/checker #{s/Keyword}))
 
 
-(defn three-tuple [v]
-  (s/validate [(s/one s/Keyword "k")
-               (s/one s/Str "s")
-               (s/one s/Num "n")]
-              v))
+(def three-tuple
+  (s/checker [(s/one s/Keyword "k")
+              (s/one s/Str "s")
+              (s/one s/Num "n")]))
 
 
-(defn vector-of-two-elements [v]
-  (s/validate [(s/one s/Any "first") (s/one s/Any "second")] v))
+(def vector-of-two-elements
+  (s/checker [(s/one s/Any "first") (s/one s/Any "second")]))
 
 
-(defn vector-of-variable-length [v]
-  (s/validate (s/conditional vector? [s/Any]) v))
+(def vector-of-variable-length
+  (s/checker (s/conditional vector? [s/Any])))
 
 
 (defn wrapper [f valid?]
   (fn [v]
-    (= (try
-         (f v)
-         true
-         (catch Exception e false))
+    (= (not (f v))
        valid?)))
