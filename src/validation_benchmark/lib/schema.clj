@@ -66,5 +66,4 @@
 
 (defn wrapper [f valid?]
   (fn [v]
-    (= (not (f v))
-       valid?)))
+    (= (nil? (f v)) valid?)))
