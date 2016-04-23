@@ -4,13 +4,13 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[com.roomkey/annotate "1.0.1"]
-                 [criterium "0.4.3"]
-                 [org.clojure/clojure "1.8.0"]
                  [com.velisco/herbert "0.7.0-alpha2"]
-                 [org.clojure/tools.cli "0.3.3"]
+                 [criterium "0.4.3"]
                  [incanter/incanter-core "1.5.6"]
                  [incanter/incanter-charts "1.5.6"]
                  [io.aviso/pretty "0.1.23"]
+                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/tools.cli "0.3.3"]
                  [prismatic/schema "1.0.4"]
                  [table "0.5.0"]]
   :plugins [[io.aviso/pretty "0.1.23"]]

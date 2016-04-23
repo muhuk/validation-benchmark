@@ -1,12 +1,11 @@
 (ns validation-benchmark.core
   (:require [clojure.java.io :refer [writer]]
             [clojure.pprint :refer [pprint]]
-            [table.core :refer [table]]
             [validation-benchmark.bench :as bench]
-            [validation-benchmark.chart :refer [make-chart]]
             [validation-benchmark.cli :as cli]
             [validation-benchmark.edn :refer [reader->seq
-                                              resource-reader]])
+                                              resource-reader]]
+            [validation-benchmark.report :refer [create-report]])
   (:gen-class))
 
 
@@ -20,29 +19,6 @@
     (let [r (apply f args)]
       (assert r (format msg args))
       nil)))
-
-
-(defn final-summary [groups results chart-path]
-  (println "Summary:")
-  (let [summary (->> (for [[group fns] groups
-                           [lib-name lib-data] results
-                           valid? [:valid :invalid]]
-                       [[group valid?]
-                        lib-name
-                        (->> lib-data
-                             (filter (comp (partial contains? fns) first))
-                             (vals)
-                             (map valid?)
-                             (map (comp (partial * 1e9) :mean))
-                             (apply +))])
-                     (filter (comp some? last))
-                     ;; (= v :invalid) returns false for :valid,
-                     ;; so it's sorted before :invalid.
-                     (sort-by (fn [[[n v] l _]] [n (= v :invalid) l])))]
-    (table (->> summary
-                (map (fn [[t l m]] [t l (format "%10.3f" m)]))
-                (into [["Test name" "Library" "Mean (ns)"]])))
-    (make-chart summary chart-path)))
 
 
 (defn prepare-benchmark-for-lib [lib-name lib-ns test-name [valids invalids]]
@@ -142,12 +118,12 @@
     (require-alternatives alternatives)
     (when options
       (if (:reuse options)
-        (final-summary groups
+        (create-report groups
                        (read-string (slurp results-path))
                        chart-path)
         (let [benchmarks (prepare-benchmarks alternatives inputs)
               bench-fn (benchmark-fns (:mode options))
               results (run-benchmarks benchmarks bench-fn)]
           (save-results results results-path)
-          (final-summary groups results chart-path))))
+          (create-report groups results chart-path))))
     (System/exit 0)))
