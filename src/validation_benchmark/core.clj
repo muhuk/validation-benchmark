@@ -114,16 +114,16 @@
                  groups
                  inputs]}] (reader->seq (resource-reader "tests.edn"))
         results-path "target/results.edn"
-        chart-path "target/chart.png"]
+        report-path "target/report"]
     (require-alternatives alternatives)
     (when options
       (if (:reuse options)
         (create-report groups
                        (read-string (slurp results-path))
-                       chart-path)
+                       report-path)
         (let [benchmarks (prepare-benchmarks alternatives inputs)
               bench-fn (benchmark-fns (:mode options))
               results (run-benchmarks benchmarks bench-fn)]
           (save-results results results-path)
-          (create-report groups results chart-path))))
+          (create-report groups results report-path))))
     (System/exit 0)))
