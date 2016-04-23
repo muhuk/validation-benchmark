@@ -10,11 +10,16 @@
   (:gen-class))
 
 
-(defn assert-result [f msg]
+(defn assert-result
+  "Wraps benchmark function to assert it always returns `true`.
+
+  `msg` is formatted with the arguments passed to benchmark function,
+  and used as a custom assertion failure message."
+  [f msg]
   (fn [& args]
     (let [r (apply f args)]
       (assert r (format msg args))
-      r)))
+      nil)))
 
 
 (defn final-summary [groups results chart-path]
@@ -64,7 +69,21 @@
             (into {}))])))
 
 
-(defn prepare-benchmarks [alternatives inputs]
+(defn prepare-benchmarks
+  "Builds runtime benchmark data.
+
+  Canonical benchmark data is stored in `tests.edn`. Output of
+  this function has the shape below:
+
+      {:<library-name> {<benchmark-name> {:valid {:fn [...]
+                                                  :inputs (fn [...] ...)},
+                                          :invalid {:fn [...]
+                                                    :inputs (fn [...] ...)}}
+       ..rest..}
+
+  Benchmark functions are called with each input. They either return `nil`
+  or throw an `AssertionError`. Throwing means a defect in the code."
+  [alternatives inputs]
   (->> (for [[lib-name lib-ns] alternatives]
          [lib-name
           (->> (for [[test-name test-data] inputs]
@@ -81,7 +100,10 @@
       (require [lib-ns])))
 
 
-(defn run-benchmarks [benchmarks bench-fn]
+(defn run-benchmarks
+  "Replaces benchmark function & inputs with the results of running the
+  benchmark."
+  [benchmarks bench-fn]
   (let [flattened (for [[lib-name lib-data] benchmarks
                         [test-name test-data] lib-data
                         [valid? {test-fn :fn inputs :inputs}] test-data]
