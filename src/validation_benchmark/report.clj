@@ -11,8 +11,8 @@
 
 
 (defn create-report [groups results report-path]
-  (println "Summary:")
-  (let [html-path (str report-path "/index.html")
+  (let [current-directory (System/getProperty "user.dir")
+        html-path (str report-path "/index.html")
         chart-path (str report-path "/chart.png")
         summary (->> (for [[group fns] groups
                            [lib-name lib-data] results
@@ -29,6 +29,8 @@
                      ;; (= v :invalid) returns false for :valid,
                      ;; so it's sorted before :invalid.
                      (sort-by (fn [[[n v] l _]] [n (= v :invalid) l])))]
+    (println "Summary: "
+             (str "file://" current-directory "/" html-path))
     (make-parents html-path)
     (with-open [w (writer html-path)]
       (.write w (render-html summary)))
