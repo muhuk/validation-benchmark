@@ -1,0 +1,9 @@
+language: clojure
+lein: lein2
+script:
+  - lein2 run
+  - bin/deploy-docs.sh
+env:
+  global:
+  - GH_REF: github.com/muhuk/validation-benchmark
+  - secure: "o0gYSf9FwVYeom0rsNQxAnltYS9e1N+t3oC30rPufqbca4ojxEeL8o9j/PVHmZjkO5Xobh5eHxjo59Qx0itHgtmN4WFuwm3YlMwkPDJasW4m7ksur6ISkWwksxsESMohxmucskijmx4QVnjQIjWhZlcrskdIqe+FkgYJhlX5jMGEXMB6BcU/W/PmMzesFAeT4MkZH7cs99RqZG1lXNVas8vM7pOgh//g3FxCqbS2EzFYViBtFANxBDLiK2ehVJiVS6hPTYFfvzSz6Mm17PpBYbjC4ByMerOadDyufCXCiZIARSFEN1rIuiWKadrommJC7HFDlyMZ4ei1JOdOLktShNxwdOBELCATiUu5t0y4noJd8f4NqxQho/IF6Ek5mD4gU6tJet8IiOX8e778IJT3ZRJ1STxU+ktRxQmT+AaGtByDf0ts3SY7A5/dQsU50i3XNzeUcC4EBlje1Hzl8f+EqdaEUl7ebOkKL7SsGm0x4JHIAfU5C/6KsYKVw8jCURD/Ejq7N9GuISfmr1pX4e7QkyZsvShRAS09W0YLK+MjnwqXeGC6Ie7WJ1AzZE7Ay/RR5JhRwVqkgzRP7cgkr3Zbnz825ed8/dgp3Dd+9hsXc3JNpwgj3udbHbJLJOp/pWn0EXLdtdWbngOlsRK6Aul7Hc9XiRvZnYijn6EI5yxQm/g="
