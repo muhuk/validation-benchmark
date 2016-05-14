@@ -18,5 +18,4 @@
   :main ^:skip-aot validation-benchmark.core
   :jvm-opts []
   :target-path "target/%s"
-  :profiles {:travis-ci {:jvm-ops ["-Xmx2g"]}
-             :uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}})
