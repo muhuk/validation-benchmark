@@ -8,6 +8,7 @@
 
 
 (declare calculate-summary
+         calculate-relative-performance
          render-html)
 
 
@@ -15,13 +16,32 @@
   (let [current-directory (System/getProperty "user.dir")
         html-path (str report-path "/index.html")
         chart-path (str report-path "/chart.png")
-        summary (calculate-summary groups results)]
+        summary (calculate-summary groups results)
+        relative-performance (calculate-relative-performance summary)]
     (println "Summary: "
              (str "file://" current-directory "/" html-path))
     (make-parents html-path)
     (with-open [w (writer html-path)]
-      (.write w (render-html summary)))
+      (.write w (render-html relative-performance)))
     (make-chart summary chart-path)))
+
+
+(defn calculate-relative-performance [summary]
+  (let [last-of-each (partial mapv last)
+        normalize #(let [m (apply min %)]
+                     (mapv (fn [k] (/ k m)) %))
+        group-by-first (partial group-by first)
+        f (comp normalize last-of-each)
+        rows (->> summary
+                  (group-by-first)
+                  (map (fn [[k v]] [k (f v)]))
+                  (into (sorted-map)))
+        columns (->> summary
+                     (group-by-first)
+                     (vals)
+                     (first)
+                     (mapv second))]        
+    [columns rows]))
 
 
 (defn calculate-summary [groups results]
@@ -66,22 +86,24 @@
    [:img {:src "chart.png"}]])
 
 
-(defn- relative-performance-table [summary]
-  [:div
-   [:h2 {:id "relative-performance-table"} "Relative performance table"]
-   (->> (for [[t l m] summary]
-          [:tr
-           [:td (pr-str t)]
-           [:td (pr-str l)]
-           [:td (format "%10.3f" m)]])
-        (into [:table {:class "table"}
-               [:tr
-                [:th "Test name"]
-                [:th "Library"]
-                [:th "Mean (ns)"]]]))])
+(defn- relative-performance-table [[columns rows]]
+  (let [header (->> columns (map (partial vector :th))
+                    (into [:tr [:th "Test"]]))]
+    [:div
+     [:h2 {:id "relative-performance-table"} "Relative performance table"]
+     (into [:table {:class "table"} header]
+           (for [[k vs] rows]
+             (into [:tr [:td [:code (pr-str k)]]]
+                   (map (fn [v]
+                          
+                          [:td {:class (cond
+                                         (<= v 1.05) "success"
+                                         (<= v 3.0) "warning"
+                                         :else "danger")}
+                           (format "%.3f" v)]) vs))))]))
 
 
-(defn- render-html [summary]
+(defn- render-html [relative-performance]
   (html5 [:head
           [:link {:rel "stylesheet"
                   :href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
@@ -111,7 +133,7 @@
            [:div {:class "row"}
             [:div {:class "col-md-10"}
              (about)
-             (relative-performance-table summary)
+             (relative-performance-table relative-performance)
              (performance-graph)]
             [:div {:id "navbar"
                    :class "col-md-2"}
