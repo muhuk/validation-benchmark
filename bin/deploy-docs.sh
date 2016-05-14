@@ -5,7 +5,7 @@ set -e
 
 
 # initialize a new git repo inside doc dir
-cd doc
+cd target/report
 git init
 
 
