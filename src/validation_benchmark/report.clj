@@ -7,34 +7,39 @@
   (:gen-class))
 
 
-(declare render-html)
+(declare calculate-summary
+         render-html)
 
 
 (defn create-report [groups results report-path]
   (let [current-directory (System/getProperty "user.dir")
         html-path (str report-path "/index.html")
         chart-path (str report-path "/chart.png")
-        summary (->> (for [[group fns] groups
-                           [lib-name lib-data] results
-                           valid? [:valid :invalid]]
-                       [[group valid?]
-                        lib-name
-                        (->> lib-data
-                             (filter (comp (partial contains? fns) first))
-                             (vals)
-                             (map valid?)
-                             (map (comp (partial * 1e9) :mean))
-                             (apply +))])
-                     (filter (comp some? last))
-                     ;; (= v :invalid) returns false for :valid,
-                     ;; so it's sorted before :invalid.
-                     (sort-by (fn [[[n v] l _]] [n (= v :invalid) l])))]
+        summary (calculate-summary groups results)]
     (println "Summary: "
              (str "file://" current-directory "/" html-path))
     (make-parents html-path)
     (with-open [w (writer html-path)]
       (.write w (render-html summary)))
     (make-chart summary chart-path)))
+
+
+(defn calculate-summary [groups results]
+  (->> (for [[group fns] groups
+             [lib-name lib-data] results
+             valid? [:valid :invalid]]
+         [[group valid?]
+          lib-name
+          (->> lib-data
+               (filter (comp (partial contains? fns) first))
+               (vals)
+               (map valid?)
+               (map (comp (partial * 1e9) :mean))
+               (apply +))])
+       (filter (comp some? last))
+       ;; (= v :invalid) returns false for :valid,
+       ;; so it's sorted before :invalid.
+       (sort-by (fn [[[n v] l _]] [n (= v :invalid) l]))))
 
 
 (defn- about []
