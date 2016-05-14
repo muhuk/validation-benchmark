@@ -27,8 +27,9 @@
 
 
 (defn quick [f]
-  (stdout->tmpfile "criterium"
-                   (summarize (criterium/quick-benchmark* f nil))))
+  ;; (stdout->tmpfile "criterium"
+  ;;                  (summarize (criterium/quick-benchmark* f nil)))
+  (summarize (criterium/quick-benchmark* f nil)))
 
 
 (defn real [f]
