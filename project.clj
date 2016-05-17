@@ -13,6 +13,7 @@
                  [io.aviso/pretty "0.1.23"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.cli "0.3.3"]
+                 [funcool/struct "0.1.0"]
                  [prismatic/schema "1.0.4"]]
   :plugins [[io.aviso/pretty "0.1.23"]]
   :main ^:skip-aot validation-benchmark.core
