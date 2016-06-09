@@ -16,6 +16,6 @@
                  [prismatic/schema "1.0.4"]]
   :plugins [[io.aviso/pretty "0.1.23"]]
   :main ^:skip-aot validation-benchmark.core
-  :jvm-opts []
+  :jvm-opts ^:replace ["-server" "-XX:+AggressiveOpts"]
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
