@@ -7,6 +7,11 @@ Run the benchmark with the command below, note that this will take a long time:
 
     $ lein run
 
+Or the quick(er) test with:
+
+    $ lein run -- --mode quick
+
+You can also modify the file at  resources/tests.edn to affect which libs and tests get run.
 
 To display command line help:
 
