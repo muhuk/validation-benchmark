@@ -1,7 +1,7 @@
 (ns validation-benchmark.report
-  (:require [clojure.java.io :refer [make-parents writer]]
-            [clj-time.format :as format-time]
+  (:require [clj-time.format :as format-time]
             [clj-time.local :as local-time]
+            [clojure.java.io :as io]
             [hiccup.page :refer [html5]]
             [validation-benchmark.chart :refer [make-chart]])
   (:gen-class))
@@ -13,36 +13,31 @@
 
 
 (def ga-js
-  "<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-390796-16', 'auto');
-  ga('send', 'pageview');
-
-</script>")
+  (-> (io/resource "js/ga.js")
+      (io/file)
+      (slurp)))
 
 
 (defn create-report [groups results report-path]
   (let [current-directory (System/getProperty "user.dir")
+        performance-graph-filename "chart.png"
         html-path (str report-path "/index.html")
-        chart-path (str report-path "/chart.png")
+        chart-path (str report-path "/" performance-graph-filename)
         summary (calculate-summary groups results)
         relative-performance (calculate-relative-performance summary)]
     (println "Summary: "
              (str "file://" current-directory "/" html-path))
-    (make-parents html-path)
-    (with-open [w (writer html-path)]
-      (.write w (render-html relative-performance)))
+    (io/make-parents html-path)
+    (with-open [w (io/writer html-path)]
+      (.write w (render-html performance-graph-filename
+                             relative-performance)))
     (make-chart summary chart-path)))
 
 
 (defn calculate-relative-performance [summary]
   (let [last-of-each (partial mapv last)
         normalize #(let [m (apply min %)]
-                     (mapv (fn [k] (/ k m)) %))
+                     (mapv (fn [k] [k (/ k m)]) %))
         group-by-first (partial group-by first)
         f (comp normalize last-of-each)
         rows (->> summary
@@ -92,11 +87,10 @@
           :data-canonical-src "https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"}]])
 
 
-(defn- performance-graph []
+(defn- performance-graph [performance-graph-filename]
   [:div
    [:h2 {:id "performance-graph"} "Performance Graph"]
-   ;; TODO: Don't hardcode filename.
-   [:img {:src "chart.png"}]])
+   [:img {:src performance-graph-filename}]])
 
 
 (defn- relative-performance-table [[columns rows]]
@@ -104,19 +98,23 @@
                     (into [:tr [:th "Test"]]))]
     [:div
      [:h2 {:id "relative-performance-table"} "Relative performance table"]
-     (into [:table {:class "table"} header]
+     (into [:table {:class "table table-bordered table-hover"} header]
            (for [[k vs] rows]
-             (into [:tr [:td [:code (pr-str k)]]]
-                   (map (fn [v]
-                          
-                          [:td {:class (cond
-                                         (<= v 1.05) "success"
-                                         (<= v 3.0) "warning"
-                                         :else "danger")}
-                           (format "%.3f" v)]) vs))))]))
+             (into [:tr [:td [:samp (pr-str k)]]]
+                   (map (fn [[abs rel]]
+                          [:td
+                           {:class (cond
+                                     (<= rel 1.05) "success"
+                                     (<= rel 3.0) "warning"
+                                     :else "danger")
+                            :title (str "Absolute timing is "
+                                        (format "%.0f" abs)
+                                        " ns.")}
+                           (format "%.3f" rel)]) vs))))]))
 
 
-(defn- render-html [relative-performance]
+(defn- render-html [performance-graph-filename
+                    relative-performance]
   (html5 [:head
           [:link {:rel "stylesheet"
                   :href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
@@ -147,7 +145,7 @@
             [:div {:class "col-md-10"}
              (about)
              (relative-performance-table relative-performance)
-             (performance-graph)]
+             (performance-graph performance-graph-filename)]
             [:div {:id "navbar"
                    :class "col-md-2"}
              [:ul {:class "nav nav-pills nav-stacked"
@@ -156,4 +154,8 @@
               [:li [:a {:href "#about"} [:span {:class "glyphicon glyphicon-triangle-right"}] " About"]]
               [:li [:a {:href "#relative-performance-table"} [:span {:class "glyphicon glyphicon-triangle-right"}] " Relative performance table"]]
               [:li [:a {:href "#performance-graph"} [:span {:class "glyphicon glyphicon-triangle-right"}] " Performance Graph"]]]]]
+           [:div {:class "row"}
+            [:div {:class "col-md-10"
+                   :style "margin-bottom: 6em;"}
+             "&nbsp;"]]
            ga-js]]))
