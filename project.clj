@@ -13,7 +13,8 @@
                  [io.aviso/pretty "0.1.23"]
                  [org.clojure/clojure "1.9.0-alpha5"]
                  [org.clojure/tools.cli "0.3.3"]
-                 [prismatic/schema "1.0.4"]]
+                 [prismatic/schema "1.0.4"]
+                 [com.taoensso/truss "1.3.3"]]
   :plugins [[io.aviso/pretty "0.1.23"]]
   :main ^:skip-aot validation-benchmark.core
   :jvm-opts ^:replace ["-server" "-XX:+AggressiveOpts" "-Djava.awt.headless=true"]

@@ -1,7 +1,8 @@
 {:alternatives {:annotate validation-benchmark.lib.annotate
                 :herbert validation-benchmark.lib.herbert
                 :schema validation-benchmark.lib.schema
-                :spec validation-benchmark.lib.spec}
+                :spec validation-benchmark.lib.spec
+                :truss validation-benchmark.lib.truss}
  :groups {:associative-collections #{person-map
                                      person-record}
           :atomic-values #{atomic-keyword
