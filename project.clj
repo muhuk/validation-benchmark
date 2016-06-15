@@ -6,7 +6,7 @@
   :dependencies [[clj-time "0.12.0"]
                  [com.roomkey/annotate "1.0.1"]
                  [com.taoensso/truss "1.3.3"]
-                 [com.velisco/herbert "0.7.0-alpha2"]
+                 [com.velisco/herbert "0.7.0"]
                  [criterium "0.4.4"]
                  [hiccup "1.0.5"]
                  [incanter/incanter-core "1.5.6"]
