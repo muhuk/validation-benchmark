@@ -25,8 +25,7 @@
          #(number? (nth % 2))))
 (s/def ::typed-person (s/and ::Person?
                              (s/keys :req-un [::name ::saiyan? ::age])))
-(s/def ::vector-of-two-elements (s/and (s/coll-of nil [])
-                                       (s/tuple nil nil)))
+(s/def ::vector-of-two-elements (s/and vector? #(= 2 (count %))))
 
 
 (defn atomic-keyword [v]
