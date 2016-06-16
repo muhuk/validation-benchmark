@@ -30,60 +30,58 @@
 
 
 (defn atomic-keyword [v]
-  (s/conform keyword?  v))
+  (s/valid? keyword?  v))
 
 
 (defn atomic-number [v]
-  (s/conform number? v))
+  (s/valid? number? v))
 
 
 (defn nil-allowed-bool [v]
-  (s/conform ::nilable-saiyan? v))
+  (s/valid? ::nilable-saiyan? v))
 
 
 (defn nil-allowed-number [v]
-  (s/conform ::nilable-number v))
+  (s/valid? ::nilable-number v))
 
 
 (defn nil-allowed-string [v]
-  (s/conform ::nilable-string v))
+  (s/valid? ::nilable-string v))
 
 
 (defn person-map [v]
-  (s/conform ::person v))
+  (s/valid? ::person v))
 
 
 (defn person-record [v]
-  (s/conform ::typed-person
+  (s/valid? ::typed-person
              v))
 
 
 (defn primes [v]
-  (s/conform prime? v))
+  (s/valid? prime? v))
 
 
 (defn range-check [v]
-  (s/conform ::range v))
+  (s/valid? ::range v))
 
 
 (defn set-of-keywords [v]
-  (s/conform ::keyword-set v))
+  (s/valid? ::keyword-set v))
 
 
 
 (defn three-tuple [v]
-  (s/conform ::three-tuple v))
+  (s/valid? ::three-tuple v))
 
 
 (defn vector-of-two-elements [v]
-  (s/conform ::vector-of-two-elements v))
+  (s/valid? ::vector-of-two-elements v))
 
 
 (defn vector-of-variable-length [v]
-  (s/conform vector? v))
+  (s/valid? vector? v))
 
 (defn wrapper [f valid?]
   (fn [v]
-    (= (not= (f v)
-             :clojure.spec/invalid)
-       valid?)))
+    (= (f v) valid?)))
