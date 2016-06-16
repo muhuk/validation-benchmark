@@ -4,7 +4,7 @@
   (:import [validation_benchmark.common Person]))
 
 
-(s/def ::age integer?)
+(s/def ::age int?)
 (s/def ::name string?)
 (s/def ::keyword-set (s/and set?
                             (s/coll-of keyword? #{})))
