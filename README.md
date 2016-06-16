@@ -1,5 +1,8 @@
 # validation-benchmark
 
+Results are hosted at [muhuk.github.io/validation-benchmark](http://muhuk.github.io/validation-benchmark/).
+
+
 ## Running The Benchmark
 
 Run the benchmark with the command below, note that this will take a long time:
