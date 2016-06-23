@@ -9,6 +9,7 @@
 
 (declare calculate-summary
          calculate-relative-performance
+         lib-info
          render-html)
 
 
@@ -18,18 +19,20 @@
       (slurp)))
 
 
-(defn create-report [groups results report-path]
+(defn create-report [alternatives groups results report-path]
   (let [current-directory (System/getProperty "user.dir")
         performance-graph-filename "chart.png"
         html-path (str report-path "/index.html")
         chart-path (str report-path "/" performance-graph-filename)
         summary (calculate-summary groups results)
-        relative-performance (calculate-relative-performance summary)]
+        relative-performance (calculate-relative-performance summary)
+        libraries (lib-info alternatives)]
     (println "Summary: "
              (str "file://" current-directory "/" html-path))
     (io/make-parents html-path)
     (with-open [w (io/writer html-path)]
-      (.write w (render-html performance-graph-filename
+      (.write w (render-html libraries
+                             performance-graph-filename
                              relative-performance)))
     (make-chart summary chart-path)))
 
@@ -70,13 +73,47 @@
        (sort-by (fn [[[n v] l _]] [n (= v :invalid) l]))))
 
 
-(defn- about []
+(defn dependencies []
+  (->> (slurp "project.clj")
+       (read-string)
+       (drop 3)
+       (apply hash-map)
+       (:dependencies)))
+
+
+(defn lib-info [alternatives]
+  (let [all-deps (dependencies)
+        alt-names (assoc (into {} (map #(vector % %) (keys alternatives)))
+                         :spec :clojure)
+        lib-deps (reduce (fn [acc [n _ :as dep]]
+                           (let [n' (keyword (name n))]
+                             (if-let [alt (reduce (fn [_ [nme lib]]
+                                                    (when (= n' lib)
+                                                      (reduced nme)))
+                                                  nil
+                                                  alt-names)]
+                               (assoc acc alt dep)
+                               acc)))
+                         {}
+                         all-deps)]
+    (sort-by first (vec lib-deps))))
+
+
+(defn- about [libraries]
   [:div
    [:h2 {:id "about"} "About"]
-   [:div "Benchmark for Clojure validation libraries."]
-   [:div
+   [:p "Benchmark for Clojure validation libraries."]
+   [:p
     [:a {:href "https://github.com/muhuk/validation-benchmark"}
-     "Source code"]]])
+     "Source code"]]
+   [:p "Following libraries are benchmarked:"]
+   (into [:ul]
+         (for [[nme dep] libraries]
+           [:li
+            [:strong nme]
+            " ("
+            [:code (str dep)]
+            ")"]))])
 
 
 (defn- fork-me []
@@ -113,7 +150,8 @@
                            (format "%.3f" rel)]) vs))))]))
 
 
-(defn- render-html [performance-graph-filename
+(defn- render-html [libraries
+                    performance-graph-filename
                     relative-performance]
   (html5 [:head
           [:link {:rel "stylesheet"
@@ -143,7 +181,7 @@
                                      (local-time/local-now))]]]]]
            [:div {:class "row"}
             [:div {:class "col-md-10"}
-             (about)
+             (about libraries)
              (relative-performance-table relative-performance)
              (performance-graph performance-graph-filename)]
             [:div {:id "navbar"

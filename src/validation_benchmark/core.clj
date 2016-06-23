@@ -118,12 +118,13 @@
     (require-alternatives alternatives)
     (when options
       (if (:reuse options)
-        (create-report groups
+        (create-report alternatives
+                       groups
                        (read-string (slurp results-path))
                        report-path)
         (let [benchmarks (prepare-benchmarks alternatives inputs)
               bench-fn (benchmark-fns (:mode options))
               results (run-benchmarks benchmarks bench-fn)]
           (save-results results results-path)
-          (create-report groups results report-path))))
+          (create-report alternatives groups results report-path))))
     (System/exit 0)))
