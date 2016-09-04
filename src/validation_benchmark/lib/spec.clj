@@ -7,7 +7,7 @@
 (s/def ::age int?)
 (s/def ::name string?)
 (s/def ::keyword-set (s/and set?
-                            (s/coll-of keyword? #{})))
+                            (s/coll-of keyword?)))
 (s/def ::nilable-saiyan? (s/nilable (s/or :t true? :f false?)))
 (s/def ::nilable-number (s/nilable number?))
 (s/def ::nilable-string (s/nilable string?))
