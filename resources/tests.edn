@@ -64,6 +64,7 @@
                       [{:name "Master Roshi"
                         :saiyan? true}
                        {:name "Krillin"
+                        :saiyan? 1
                         :age 11}]]
           person-record [[#common/person {:name "Goku"
                                           :saiyan? true
@@ -74,6 +75,7 @@
                          [#common/person {:name "Master Roshi"
                                           :saiyan? true}
                           #common/person {:name "Krillin"
+                                          :saiyan? 1
                                           :age 11}
                           {:name "Goku"
                            :saiyan? true
