@@ -6,7 +6,7 @@
 
 (s/def ::age int?)
 (s/def ::name string?)
-(s/def ::saiyan? (s/or :t true? :f false?))
+(s/def ::saiyan? boolean?)
 (s/def ::keyword-set (s/every keyword :kind set?))
 (s/def ::nilable-saiyan? (s/nilable ::saiyan?))
 (s/def ::nilable-number (s/nilable number?))
