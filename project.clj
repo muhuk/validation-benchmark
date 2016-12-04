@@ -12,7 +12,7 @@
                  [incanter/incanter-core "1.5.6"]
                  [incanter/incanter-charts "1.5.6"]
                  [io.aviso/pretty "0.1.26"]
-                 [org.clojure/clojure "1.9.0-alpha13"]
+                 [org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/tools.cli "0.3.5"]
                  [prismatic/schema "1.1.3"]]
   :plugins [[io.aviso/pretty "0.1.26"]]
