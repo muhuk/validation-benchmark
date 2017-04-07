@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[clj-time "0.12.0"]
                  [com.roomkey/annotate "1.0.1"]
-                 [com.taoensso/truss "1.3.6"]
+                 [com.taoensso/truss "1.4.0"]
                  [com.velisco/herbert "0.7.0"]
                  [criterium "0.4.4"]
                  [hiccup "1.0.5"]
